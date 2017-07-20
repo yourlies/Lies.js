@@ -1,4 +1,17 @@
 (function () {
+  var TEXT_NODE = 3;
+  var YUKI_DOM = [];
+  var fetchYukiDom = function () {
+    var yukiDom = document.body.getElementsByTagName('yuki');
+    for (var i = 0; i < yukiDom.length; i++) {
+      YUKI_DOM.push(yukiDom[i].cloneNode(true));
+    }
+    while (yukiDom.length > 0) {
+      document.body.removeChild(yukiDom[0]);
+    }
+  }
+  fetchYukiDom();
+
   var renderYukiDomToVirtualDomObject = function () {
     var RenderYukiDomToVirtualDomObject = function () {
       this.yukiDom = [];
@@ -6,26 +19,22 @@
       this.fetch();
     };
     RenderYukiDomToVirtualDomObject.prototype.fetch = function () {
-      var yukiDom = document.body.getElementsByTagName('yuki');
-      for (var i = 0; i < yukiDom.length; i++) {
-        this.yukiDom.push(yukiDom[i].cloneNode(true));
-      }
-      while (yukiDom.length > 0) {
-        document.body.removeChild(yukiDom[0]);
-      }
+      this.yukiDom = YUKI_DOM;
     }
-    RenderYukiDomToVirtualDomObject.prototype.renderGivenDomIndexToVirtualDomObject = function (index) {
-      var dom = this.yukiDom[index]
+    RenderYukiDomToVirtualDomObject.prototype.renderGivenDomToVirtualDomObject = function (dom, rootNode, nodeLayerNumber) {
       var virtualDomObjectContainer = [];
-      this._renderYukiDomToVirtualDomObject(dom, dom.cloneNode(), virtualDomObjectContainer);
+      this._renderYukiDomToVirtualDomObject(dom, dom.cloneNode(), virtualDomObjectContainer, nodeLayerNumber, 0, 0);
+      if (rootNode) {
+        virtualDomObjectContainer[0].parentNode = rootNode;
+      }      
       return virtualDomObjectContainer;
     }
-    RenderYukiDomToVirtualDomObject.prototype._renderYukiDomToVirtualDomObject = function (yukiDom, parentNode, virtualDomObjectContainer) {
+    RenderYukiDomToVirtualDomObject.prototype._renderYukiDomToVirtualDomObject = function (yukiDom, parentNode, virtualDomObjectContainer, nodeLayerNumber, nodeLayerId, parentNodeLayerId) {
       this._removeEmptyChildTextNode(yukiDom);
       var virtualDomObject = this._renderDomToVirtualDom(yukiDom);
-      virtualDomObjectContainer.push({ node: virtualDomObject.parent, parentNode: parentNode });
+      virtualDomObjectContainer.push({ node: virtualDomObject.parent, parentNode: parentNode, layerNumber: nodeLayerNumber, layerId: nodeLayerId, parentLayerId: parentNodeLayerId });
       for (var i = 0; i < virtualDomObject.child.childNodes.length; i++) {
-        this._renderYukiDomToVirtualDomObject(virtualDomObject.child.childNodes[i], virtualDomObject.parent, virtualDomObjectContainer)        
+        this._renderYukiDomToVirtualDomObject(virtualDomObject.child.childNodes[i], virtualDomObject.parent, virtualDomObjectContainer, nodeLayerNumber + 1, i, nodeLayerId)
       }
     }
     RenderYukiDomToVirtualDomObject.prototype._removeEmptyChildTextNode = function (dom) {
@@ -44,43 +53,108 @@
   var renderYukiDomToVirtualDomObject = renderYukiDomToVirtualDomObject();
   var bidirectionalBindings = function () {
     var BidirectionalBindings = function () {
-      this.traversalData = [];
-      this.objectData = [];
-      this.copyVirtualDomObjectItems = [];
-      this.parentCopyVirtualDomObject = this.getCopyVirtualDomObject();
-      this.renderTraversalData();
+      this.containConditionNodeObjectItems = [];
+      this.conditionObjectItems = [];
+      this.objectItems = [];
+      this.parentCopyVirtualDomObject = this.getCopyVirtualDomObject(YUKI_DOM[0]);
+      this.parentCopyObject = this.getCopyVirtualDomObject(YUKI_DOM[0]);
+      this.renderGivenObjectItem(this.parentCopyObject);
+      this.renderObjectItems();
     }
-    BidirectionalBindings.prototype.getCopyVirtualDomObject = function () {
-      return renderYukiDomToVirtualDomObject.renderGivenDomIndexToVirtualDomObject(0);
-    }
-    BidirectionalBindings.prototype.renderTraversalData = function () {
-      this.detectionTraversalData(this.parentCopyVirtualDomObject);
-      var traversalDataString = this.traversalData[0].node.getAttribute('y-for');
-      var traversalDataArr = traversalDataString.split('in');
-      for (var i = 0; i < traversalDataArr.length; i++) {
-        traversalDataArr[i] = traversalDataArr[i].trim();
+    BidirectionalBindings.prototype.renderGivenObjectItem = function (object) {
+      for (var i = 0; i < object.length; i++) {
+        object[i].parentNode.appendChild(object[i].node);        
       }
-      var traversalData = state[traversalDataArr[1]];
-      for (var i = 0; i < traversalData.length; i++) {
-        var index = this.objectData.push([]) - 1;
-        var copyVirtualDomObject = this.getCopyVirtualDomObject();
-        for (var j = 0; j < copyVirtualDomObject.length; j++) {
-          if (copyVirtualDomObject[j].node.nodeType == 3) {
-            var chips = copyVirtualDomObject[j].node.nodeValue.match(/{{(.*?)}}/);
-            var objectData = this.getObjectDataByString(traversalData[i], chips[1]);
-            var cloneNode = document.createTextNode(objectData);
-            this.objectData[index].push({ node: cloneNode, parentNode: copyVirtualDomObject[j].parentNode });
+    }
+    BidirectionalBindings.prototype.renderObjectItems = function () {
+      // get node witch contains conditional statement
+      this.detectionContainConditionNode(this.parentCopyVirtualDomObject);
+      // collect conditionNodeObject key
+      var conditionNodeObjectKeyCollect = [];
+      // make a back-up copy of YUKI_DOM
+      var copyObject = this.getCopyVirtualDomObject(YUKI_DOM[0]);
+      var object = [];
+      // render the node contains conditional statement
+      for (var i = 0; i < this.containConditionNodeObjectItems.length; i++) {
+        var conditionNodeObject = this.containConditionNodeObjectItems[i];
+        var parentNode = copyObject[conditionNodeObject.key].parentNode;
+        this.renderContainConditionNodeObject(conditionNodeObject.object.node, conditionNodeObject.key, parentNode);
+        conditionNodeObjectKeyCollect.push(conditionNodeObject.key);
+      }
+      // integration object
+      for (var i = 0; i < copyObject.length; i++) {
+        if (conditionNodeObjectKeyCollect.indexOf(i) !== -1) {
+          var parentObject = copyObject[i];
+          var childObject = copyObject[i + 1];
+          while (childObject.layerNumber > parentObject.layerNumber) {
+            i++;
+            childObject = copyObject[i + 1];
+          }
+          for (var j = 0; j < this.conditionObjectItems[0].length; j++) {
+            object.push(this.conditionObjectItems[0][j]);
+          }
+          continue;
+        }
+        object.push(copyObject[i]);
+      }
+      // render the node in object items
+      for (var i = 0; i < object.length; i++) {
+        object[i].parentNode.appendChild(object[i].node);
+      }
+      document.body.appendChild(object[1].node);
+    }
+    BidirectionalBindings.prototype.getCopyVirtualDomObject = function (dom, rootNode) {
+      return renderYukiDomToVirtualDomObject.renderGivenDomToVirtualDomObject(dom, rootNode, 0);
+    }
+    BidirectionalBindings.prototype.renderContainConditionNodeObject = function (node, nodeKey, parentNode) {
+      // get condition
+      var condition = node.getAttribute('y-for');
+      var conditionArr = condition.split('in');
+      for (var i = 0; i < conditionArr.length; i++) {
+        conditionArr[i] = conditionArr[i].trim();
+      }
+      // get state key&value
+      var stateKey = conditionArr[1];
+      var stateValue = state[stateKey];
+      // 
+      var objectIndex = this.conditionObjectItems.push([]) - 1;
+      // var conditionRootObject = this.parentCopyVirtualDomObject[nodeKey];
+      var conditionRootNode = parentNode;
+      for (var i = 0; i < stateValue.length; i++) {
+        var parentConditionObject = this.parentCopyObject[nodeKey];
+        var copyConditionObject = this.getCopyVirtualDomObject(parentConditionObject.node, conditionRootNode);
+        
+        for (var j = 0; j < copyConditionObject.length; j++) {
+          var objectItem = copyConditionObject[j];
+          if (objectItem.node.nodeType == TEXT_NODE) {
+            var value = this.renderTemplateSyntax(stateKey, i, objectItem.node.nodeValue);
+            var cloneTextNode = document.createTextNode(value);
+            this.conditionObjectItems[objectIndex].push({
+              node: cloneTextNode,
+              parentNode: objectItem.parentNode,
+              layerNumber: objectItem.layerNumber,
+              layerId: objectItem.layerId,
+              parentLayerId: objectItem.parentLayerId
+            });
             continue;
           }
-          this.objectData[index].push({ node: copyVirtualDomObject[j].node, parentNode: copyVirtualDomObject[j].parentNode });
+          this.conditionObjectItems[objectIndex].push({
+            node: objectItem.node,
+            parentNode: objectItem.parentNode,
+            layerNumber: objectItem.layerNumber,
+            layerId: objectItem.layerId,
+            parentLayerId: objectItem.parentLayerId
+          });
         }
       }
-      for (var i = 0; i < this.objectData.length; i++) {
-        for (var j = 0; j < this.objectData[i].length; j ++) {
-          this.objectData[i][j].parentNode.appendChild(this.objectData[i][j].node);          
-        }
+    }
+    BidirectionalBindings.prototype.renderTemplateSyntax = function (key, index, string) {
+      var chips = string.match(/(.*?){{(.*?)}}(.*?)/);
+      if (chips) {
+        var value = this.getObjectDataByString(state[key][index], chips[2]);
+        return `${chips[1]}${value}${chips[3]}`;
       }
-      document.body.appendChild(this.objectData[0][1].node);
+      return string;
     }
     BidirectionalBindings.prototype.getObjectDataByString = function (object, string) {
       if (string.match('.')) {
@@ -92,11 +166,11 @@
         return copyObject;
       }
     }
-    BidirectionalBindings.prototype.detectionTraversalData = function (copyVirtualDomObject) {
+    BidirectionalBindings.prototype.detectionContainConditionNode = function (copyVirtualDomObject) {
       for (var i = 0; i < copyVirtualDomObject.length; i++) {
-        if (copyVirtualDomObject[i].node.nodeType != 3) {
+        if (copyVirtualDomObject[i].node.nodeType != TEXT_NODE) {
           copyVirtualDomObject[i].node.getAttribute('y-for')
-            ? this.traversalData.push(copyVirtualDomObject[i])
+            ? this.containConditionNodeObjectItems.push({ object: copyVirtualDomObject[i], key: i })
             : false;
         }
       }
