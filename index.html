@@ -5,22 +5,7 @@
   <title>yuki</title>
 </head>
 <body>
-<yuki>
-<div>
-  <div y-for="item in items">
-    <div>{{ item.name.as }}</div>
-    <div>
-        {{ item.name.as }}<a>{{ item.id }}</a>
-    </div>
-    <div>嘿嘿嘿</div>
-  </div>
-  <a>111</a>
-</div>
-</yuki>
-<script>
-  var state = {};
-  state.items = [{ name: { as: 'changle' }, id: 11 }, { name: { as: 'f' }, id: 11 }];
-</script>
-<script src="./render.js"></script>
+  <div id="app"></div>
+  <script src="./render.js"></script>
 </body>
 </html>
