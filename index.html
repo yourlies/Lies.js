@@ -3,9 +3,54 @@
 <head>
   <meta charset="utf-8" />
   <title>yuki</title>
+  <link rel="stylesheet" type="text/css" href="./l.css">
 </head>
 <body>
-  <div id="app"></div>
+  <div id="app">
+    <div class="wrap">
+      <div class="container">
+        <header class="df tc">
+          <nav class="links df">
+            <a
+              class="link"
+              $for="link in links">
+              {{ link }}</a>
+          </nav>
+        </header>
+        <div class="main">
+          <div class="user-info">
+            <div class="avatar df tc">
+              <div class="avatar-content"></div>
+            </div>
+            <div class="user-info-content-name tc">Lies</div>
+            <div class="user-info-content-area tc">web开发，全栈，略知一二</div>
+          </div>
+          <!-- <div class="user-desc df tc">
+            <div class="user-desc-content">
+              <p>九四年，生于浙江，现居广州</p>
+              <p>喜欢折腾，追求极简主义，喜欢做一些有趣的项目</p>
+              <p>联系我，<a>邮箱</a></p>
+            </div>
+          </div> -->
+        </div>
+      </div>
+    </div>
+  </div>
   <script src="./render.js"></script>
+  <script>
+    var obj = new Lies({
+      data () {
+        return {
+          title: '测试',
+          links: ['Lies', '项目', '写真', '笔记', '友链']
+        }
+      },
+      watch: {}
+    });
+    var el = document.getElementById('app');
+    var refsObj = new Refs(el, obj);
+    var refs = refsObj.templateElCache;
+    obj.updater({ title: '一下' });
+  </script>
 </body>
 </html>
