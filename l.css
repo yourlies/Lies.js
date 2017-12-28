@@ -64,8 +64,19 @@ body {
 .avatar-content {
   width: 180px;
   height: 180px;
+  cursor: pointer;
   background: url('./img/me.jpg') center / 180px;
   border-radius: 90px;
+  -webkit-transition: -webkit-box-shadow .6s ease-in-out;
+  transition: -webkit-box-shadow .6s ease-in-out;
+  transition: box-shadow .6s ease-in-out;
+  transition: box-shadow .6s ease-in-out, -webkit-box-shadow .6s ease-in-out;
+  -webkit-box-shadow: 1px 2px 1px #888;
+          box-shadow: 1px 2px 1px #888;
+}
+.avatar-content:hover {
+  -webkit-box-shadow: 1px 5px 15px #888;
+          box-shadow: 1px 5px 15px #888; 
 }
 .user-info-content-name {
   margin-top: 5px;
