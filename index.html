@@ -17,40 +17,60 @@
               {{ link }}</a>
           </nav>
         </header>
-        <div class="main">
+        <div class="main" $if="isUserlogo">
           <div class="user-info">
             <div class="avatar df tc">
-              <div class="avatar-content"></div>
+              <div class="avatar-content" @click="switchUserinfo"></div>
             </div>
             <div class="user-info-content-name tc">Lies</div>
             <div class="user-info-content-area tc">web开发，全栈，略知一二</div>
           </div>
-          <!-- <div class="user-desc df tc">
+          <div class="user-info-back">
+            <div class="tc user-info-back-content" @click="switchUserinfo">info</div>
+          </div>
+        </div>
+        <div class="main" $if="isUserinfo">
+          <div class="user-desc df tc">
             <div class="user-desc-content">
               <p>九四年，生于浙江，现居广州</p>
               <p>喜欢折腾，追求极简主义，喜欢做一些有趣的项目</p>
               <p>联系我，<a>邮箱</a></p>
             </div>
-          </div> -->
+          </div>
+          <div class="user-info-back">
+            <div class="tc user-info-back-content" @click="switchUserlogo">back</div>
+          </div>
         </div>
       </div>
     </div>
   </div>
   <script src="./render.js"></script>
   <script>
-    var obj = new Lies({
-      data () {
-        return {
-          title: '测试',
-          links: ['Lies', '项目', '写真', '笔记', '友链']
+    (function () {
+      var obj = new Lies({
+        data () {
+          return {
+            title: '测试',
+            isUserlogo: true,
+            isUserinfo: false,
+            links: ['Lies', '项目', '写真', '笔记', '友链']
+          }
+        },
+        methods: {
+          switchUserinfo: function () {
+            this.updater({ 'isUserlogo': false });
+            this.updater({ 'isUserinfo': true });
+          },
+          switchUserlogo: function () {
+            this.updater({ 'isUserlogo': true });
+            this.updater({ 'isUserinfo': false });
+          }
         }
-      },
-      watch: {}
-    });
-    var el = document.getElementById('app');
-    var refsObj = new Refs(el, obj);
-    var refs = refsObj.templateElCache;
-    obj.updater({ title: '一下' });
+      });
+      var el = document.getElementById('app');
+      var refsObj = new Refs(el, obj);
+      var refs = refsObj.templateElCache;
+    })();
   </script>
 </body>
 </html>
