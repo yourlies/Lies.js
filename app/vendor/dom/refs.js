@@ -37,18 +37,17 @@ Refs.prototype._parseAttr = function (rule, handle) {
     }
     const outerHTML = ref.outerHTML;
     const rawHTML = outerHTML.match(/<.*?>/i)[0];
-    const pattern = new RegExp(`${rule}([a-z0-9]+="[a-z.0-9]+")`, 'gi');
+    const pattern = new RegExp(`${rule}([a-z0-9]+=".*?")`, 'gi');
     const events = rawHTML.match(pattern);
     if (!events) {
       continue;
     }
     for (let j = 0; j < events.length; j++) {
-      const chips = events[j].split('=');
+      const index = events[j].indexOf('=');
       const parentRef = ref.parentNode;
-      const eventName = chips[0].match(/[a-z0-9]+/i)[0];
-      const paramKey = chips[1].match(/[a-z.0-9]+/i)[0];
-      const paramValue = Obj.read(paramKey, this.state);
-      handle(ref, parentRef, eventName, paramValue, paramKey);
+      const eventName = events[j].substring(1, index);
+      const paramKey = events[j].substring(index + 2, events[j].length - 1);
+      handle(ref, parentRef, eventName, paramKey);
     }
   }
 }
@@ -127,25 +126,48 @@ Refs.prototype._renderTemplate = function () {
   }
 }
 
+Refs.prototype._renderAttrTemplate = function (ref, parentRef, eventName, paramKey, handle, rule) {
+  const res =  Ref.detectParam(paramKey);
+  const paramKeyArr = res.arr;
+  const isEval = res.isEval;
+  const paramValue = Obj.read(paramKey, this.state, isEval);
+
+  Ref.removeAttr(ref, `${rule}${eventName}`);
+  for (let i = 0; i < paramKeyArr.length; i++) {
+    const key = paramKeyArr[i];
+    const watcher = Obj.readAsArr(this.state.watch[key]);
+    watcher.push(() => {
+      const value = Obj.read(paramKey, this.state, isEval);
+      handle(eventName, ref, parentRef, value);
+    });
+    this.state.watch[key] = watcher;
+  }
+  handle(eventName, ref, parentRef, paramValue);
+}
+
 Refs.prototype._renderAttr = function () {
   const _this = this;
-  this._parseAttr('@', (ref, parentRef, eventName, eventHandle) => {
+  this._parseAttr('@', (ref, parentRef, eventName, paramKey) => {
+    const eventHandle = Obj.read(paramKey, _this.state);
     Ref.removeAttr(ref, `@${eventName}`);
     ref.addEventListener(eventName, function () {
       eventHandle.call(_this.state);
     });
   })
-  this._parseAttr('~', (ref, parentRef, eventName, paramValue, paramKey) => {
-    Ref.removeAttr(ref, `~${eventName}`);
-    const completeParam = true;
-    const watcher = Obj.readAsArr(_this.state.watch[paramKey]);
-    watcher.push(() => {
-      const value = Obj.read(paramKey, _this.state);
+  this._parseAttr('~', (ref, parentRef, eventName, paramKey) => {
+    const handle = (eventName, ref, parentRef, value) => {
       this.Directive[eventName](ref, parentRef, value);
-    });
-    _this.state.watch[paramKey] = watcher;
-    this.Directive[eventName](ref, parentRef, paramValue);
-  })
+    }
+    this._renderAttrTemplate.call(this, ref, parentRef, eventName, paramKey, handle, '~');
+  });
+  this._parseAttr(':', (ref, parentRef, eventName, paramKey) => {
+    const handle = (eventName, ref, parentRef, value) => {
+      console.log(value)
+      const attrValue = Obj.readAsArr(value);
+      ref.setAttribute(eventName, attrValue.join(' '))
+    }
+    this._renderAttrTemplate.call(this, ref, parentRef, eventName, paramKey, handle, ':');
+  });
 }
 
 module.exports = Refs;

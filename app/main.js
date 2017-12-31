@@ -4,34 +4,26 @@ import Refs from './vendor/dom/refs.js';
 self.Lies = Lies;
 self.Refs = Refs;
 
-// const obj = new Lies({
-//   data () {
-//     return {
-//       title: '测试',
-//       cu: false,
-//       arr: [0, 1, 2],
-//       links: ['Lies', '项目', '写真', '笔记', '友链']
-//     }
-//   },
-//   methods: {
-//     test () {
-//       console.log(this);
+// setTimeout(function () {
+//   var obj = new Lies({
+//     data () {
+//       return {
+//         title: '测试',
+//         isFrontInfo: true,
+//         links: ['Lies', '项目', '写真', '笔记', '友链']
+//       }
 //     },
-//     fuck () {
-//       console.log(123123)
+//     methods: {
+//       switchUserinfo: function () {
+//         this.updater({ 'isFrontInfo': false });
+//       },
+//       switchUserlogo: function () {
+//         this.updater({ 'isFrontInfo': true });
+//       },
+//       redirect: function () {}
 //     }
-//   },
-//   watch: {
-//     'condition.fuck' () {
-      
-//     }
-//   }
+//   });
+//   var el = document.getElementById('app');
+//   var refsObj = new Refs(el, obj);
+//   var refs = refsObj.templateElCache;
 // });
-// const el = document.createElement('div');
-// el.innerHTML = '<div @click="test" ~if="cu">{{ title }}</div><a ~for="a in arr" @click="fuck">asd@{{ a }}</a>';
-// const refsObj = new Refs(el, obj);
-// const refs = refsObj.templateElCache;
-// document.body.appendChild(el);
-
-// obj.updater({ 'cu': true });
-

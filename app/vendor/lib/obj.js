@@ -1,5 +1,11 @@
 const Obj = {};
-Obj.read = function (param, state) {
+Obj.read = function (param, state, isEval) {
+  const needEval = isEval || !param.match(/^[a-z0-9.]/);
+  if (needEval) {
+    const key = param.replace(/@/g, 'state.');
+    return eval(`${key}`);
+  }
+
   const chips = param.split('.');
   if (chips.length > 1) {
     let res = state;
@@ -30,6 +36,8 @@ Obj.copy = function (obj, objCopy) {
 Obj.readAsArr = function (raw) {
   switch (typeof raw) {
     case 'function':
+      return [raw];
+    case 'string':
       return [raw];
     default:
       return raw || [];
