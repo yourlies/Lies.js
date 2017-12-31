@@ -12,14 +12,14 @@
         <header class="df tc">
           <nav class="links-nav df">
             <a
-              class="link-nav link"
+              :class="['link-nav', 'df', 'tc', 'ac', 'link', @activedIndex == ~index ? 'actived ' + @activedColor : '']"
               ~for="link in links"
-              @click="redirect">
-              {{ link }}
+              @click="redirect(~index)">
+              {{ ~link }}
             </a>
           </nav>
         </header>
-        <div class="main" ~if="isUserlogo">
+        <div :class="['main', @activedBackgroundColor]" ~if="isFrontInfo">
           <div class="user-info">
             <div class="avatar df tc">
               <div class="avatar-content link" @click="switchUserinfo"></div>
@@ -33,7 +33,7 @@
             </div>
           </div>
         </div>
-        <div class="main" ~if="isUserinfo">
+        <div :class="['main', @activedBackgroundColor]" ~if="!@isFrontInfo">
           <div class="user-desc df tc">
             <div class="user-desc-content">
               <p>九四年，生于浙江，现居广州</p>
@@ -57,22 +57,28 @@
         data () {
           return {
             title: '测试',
-            isUserlogo: true,
-            isUserinfo: false,
-            links: ['Lies', '项目', '写真', '笔记', '友链']
+            isFrontInfo: true,
+            crs: ['crForgive', 'crSkyBlue', 'crOrange', 'crCyan', 'crPurple'],
+            bcrs: ['bcrForgive', 'bcrSkyBlue', 'bcrOrange', 'bcrCyan', 'bcrPurple'],
+            links: ['Lies', '项目', '写真', '笔记', '友链'],
+            activedIndex: 0,
+            activedColor: 'crForgive',
+            activedBackgroundColor: 'bcrForgive'
           }
         },
         methods: {
           switchUserinfo: function () {
-            this.updater({ 'isUserlogo': false });
-            this.updater({ 'isUserinfo': true });
+            this.updater({ 'isFrontInfo': false });
           },
           switchUserlogo: function () {
-            this.updater({ 'isUserlogo': true });
-            this.updater({ 'isUserinfo': false });
+            this.updater({ 'isFrontInfo': true });
           },
-          redirect: function () {
-            
+          redirect: function (index) {
+            this.updater({
+              activedIndex: index,
+              activedColor: this.crs[index],
+              activedBackgroundColor: this.bcrs[index]
+            })
           }
         }
       });

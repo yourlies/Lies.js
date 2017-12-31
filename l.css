@@ -6,10 +6,30 @@ body {
   width: 100%;
   height: 100%;
 }
-.main {
+.bcrForgive {
   background: -webkit-gradient(linear,left top, left bottom,from(#e9ffed),to(#fff)) repeat-x top left;
   background: -webkit-linear-gradient(#e9ffed,#fff) repeat-x top left;
   background: linear-gradient(#e9ffed,#fff) repeat-x top left;
+}
+.bcrSkyBlue {
+  background: -webkit-gradient(linear,left top, left bottom,from(#eef7ff),to(#fff)) repeat-x top left;
+  background: -webkit-linear-gradient(#eef7ff,#fff) repeat-x top left;
+  background: linear-gradient(#eef7ff,#fff) repeat-x top left;
+}
+.bcrOrange {
+  background: -webkit-gradient(linear,left top, left bottom,from(#fff5ea),to(#fff)) repeat-x top left;
+  background: -webkit-linear-gradient(#fff5ea,#fff) repeat-x top left;
+  background: linear-gradient(#fff5ea,#fff) repeat-x top left;
+}
+.bcrCyan {
+  background: -webkit-gradient(linear,left top, left bottom,from(#e8eeff),to(#fff)) repeat-x top left;
+  background: -webkit-linear-gradient(#e8eeff,#fff) repeat-x top left;
+  background: linear-gradient(#e8eeff,#fff) repeat-x top left;
+}
+.bcrPurple {
+  background: -webkit-gradient(linear,left top, left bottom,from(#f1f4f7),to(#fff)) repeat-x top left;
+  background: -webkit-linear-gradient(#f1f4f7,#fff) repeat-x top left;
+  background: linear-gradient(#f1f4f7,#fff) repeat-x top left;
 }
 .link {
   cursor: pointer;
@@ -51,8 +71,52 @@ body {
       -ms-flex-pack: center;
           justify-content: center;
 }
+.df.ac {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+     -moz-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+.crForgive {
+  color: #4fa949;
+}
+.crSkyBlue {
+  color: #05b0ff;
+}
+.crOrange {
+  color: #ff8405;
+}
+.crCyan {
+  color: #4979a9;
+}
+.crPurple {
+  color: #4e687b;
+}
+.actived {
+  border-radius: 60px;
+  -webkit-box-shadow: 1px 1px 1px #ddd;
+          box-shadow: 1px 1px 1px #ddd;
+}
+.actived.crForgive {
+  background-color: #e9ffed;
+}
+.actived.crSkyBlue {
+  background-color: #eef7ff;
+}
+.actived.crOrange {
+  background-color: #fff5ea;
+}
+.actived.crCyan {
+  background-color: #e8eeff;
+}
+.actived.crPurple {
+  background-color: #f1f4f7;
+}
 .link-nav {
-  padding: 30px;
+  margin: 20px;
+  width: 80px;
+  height: 80px;
   font-size: 24px;
   font-weight: 200;
 }

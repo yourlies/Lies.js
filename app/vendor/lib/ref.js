@@ -1,11 +1,18 @@
 const Ref = {};
-Ref.removeAttr = function (ref, tag) {
+Ref.replaceAttr = function (ref, tag, replaceTag, replaceValue) {
   const pattern = new RegExp(`${tag}="(.*?)"`, 'g');
   if (typeof ref == 'string') {
-    return ref.replace(pattern, '');
+    if (replaceTag == '') {
+      return ref.replace(pattern, '');
+    } else {
+      return ref.replace(pattern, `~${replaceTag}=${replaceValue}`);
+    }
   } else {
     ref.removeAttribute(tag)
   }
+}
+Ref.removeAttr = function (ref, tag) {
+  return this.replaceAttr(ref, tag, '', '');
 }
 Ref.detectParam = function (input) {
   const outPut = [];

@@ -2,7 +2,9 @@ const Obj = {};
 Obj.read = function (param, state, isEval) {
   const needEval = isEval || !param.match(/^[a-z0-9.]/);
   if (needEval) {
-    const key = param.replace(/@/g, 'state.');
+    const key = param.replace(/@/g, 'state.').replace(/\.([0-9]+)/g, function (match) {
+      return `[${match.substring(1, match.length)}]`;
+    });
     return eval(`${key}`);
   }
 
@@ -42,5 +44,16 @@ Obj.readAsArr = function (raw) {
     default:
       return raw || [];
   }
+}
+Obj.readAsTrimArr = function (raw) {
+  const arr = [];
+  for (let i = 0; i < raw.length; i++) {
+    if (typeof raw[i] == 'string') {
+      arr.push(raw[i].trim());
+    } else {
+      arr.push(raw[i]);
+    }
+  }
+  return arr;
 }
 module.exports = Obj;

@@ -93,13 +93,26 @@ Refs.prototype._renderList = function () {
     }
     const uncontain = match.substring(0, startIndex);
     const contain = match.substring(startIndex, match.length);
-    const paramKey = contain.match(/\~for="(.*?)"/)[1].split(' in ')[1];
-    const paramValue = this.state[paramKey];
+    const chips = contain.match(/\~for="(.*?)"/)[1].split(' in ');
+
+    const loopParams = Obj.readAsTrimArr(chips[0].replace(/\(|\)|/g, '').split(','));
+    const name = loopParams[0];
+    const indexKey = loopParams[1] || 'index';
+    const key = chips[1];
+    const loopArr = this.state[key];
     let render = '';
-    for (let j = 0; j < paramValue.length; j++) {
-      render += contain.replace(/{{([a-z0-9 ])+}}/gi, `{{ ${paramKey}.${j} }}`);
+    for (let j = 0; j < loopArr.length; j++) {
+      const pattern = new RegExp(`{{(.*?)(~${name}|~${indexKey})(.*?)}}`, 'g');
+      const templateReplace = contain.replace(pattern, function (match) {
+        return match.replace(`~${name}`, `${key}.${j}`).replace(`~${indexKey}`, j);
+      });
+      const templateAddAttrKey = templateReplace.replace(/<[a-z]+ /i, function (match) {
+        return `${match}~key="${name}, ${key}.${j}, ${j}, ${indexKey}" `;
+      })
+      render += templateAddAttrKey;
     }
     const inner = `${uncontain}${render}`;
+
     return Ref.removeAttr(inner, '~for');
   });
 }
@@ -130,19 +143,17 @@ Refs.prototype._renderAttrTemplate = function (ref, parentRef, eventName, paramK
   const res =  Ref.detectParam(paramKey);
   const paramKeyArr = res.arr;
   const isEval = res.isEval;
-  const paramValue = Obj.read(paramKey, this.state, isEval);
 
   Ref.removeAttr(ref, `${rule}${eventName}`);
   for (let i = 0; i < paramKeyArr.length; i++) {
     const key = paramKeyArr[i];
     const watcher = Obj.readAsArr(this.state.watch[key]);
     watcher.push(() => {
-      const value = Obj.read(paramKey, this.state, isEval);
-      handle(eventName, ref, parentRef, value);
+      handle(eventName, ref, parentRef, paramKey);
     });
     this.state.watch[key] = watcher;
   }
-  handle(eventName, ref, parentRef, paramValue);
+  handle(eventName, ref, parentRef, paramKey);
 }
 
 Refs.prototype._renderAttr = function () {
@@ -155,14 +166,14 @@ Refs.prototype._renderAttr = function () {
     });
   })
   this._parseAttr('~', (ref, parentRef, eventName, paramKey) => {
-    const handle = (eventName, ref, parentRef, value) => {
-      this.Directive[eventName](ref, parentRef, value);
+    const handle = (eventName, ref, parentRef, key) => {
+      this.Directive[eventName](ref, parentRef, key, this.state);
     }
     this._renderAttrTemplate.call(this, ref, parentRef, eventName, paramKey, handle, '~');
   });
   this._parseAttr(':', (ref, parentRef, eventName, paramKey) => {
-    const handle = (eventName, ref, parentRef, value) => {
-      console.log(value)
+    const handle = (eventName, ref, parentRef, key) => {
+      const value = Obj.read(key, this.state);
       const attrValue = Obj.readAsArr(value);
       ref.setAttribute(eventName, attrValue.join(' '))
     }

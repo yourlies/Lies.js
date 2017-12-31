@@ -10,6 +10,7 @@ self.Refs = Refs;
 //       return {
 //         title: '测试',
 //         isFrontInfo: true,
+//         currentIndex: 1,
 //         links: ['Lies', '项目', '写真', '笔记', '友链']
 //       }
 //     },
@@ -26,4 +27,8 @@ self.Refs = Refs;
 //   var el = document.getElementById('app');
 //   var refsObj = new Refs(el, obj);
 //   var refs = refsObj.templateElCache;
+
+//   setTimeout(() => {
+//     obj.updater({ currentIndex: 3 })
+//   })
 // });
