@@ -124,8 +124,12 @@ body {
   background-color: #e9ffed;
   color: #4fa949;
 }
-.user-info {
+.user-info, .project {
   padding-top: 80px;
+}
+.project-default {
+  font-size: 30px;
+  font-weight: 200;
 }
 .avatar-content {
   width: 180px;
