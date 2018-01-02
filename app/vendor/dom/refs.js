@@ -159,10 +159,38 @@ Refs.prototype._renderAttrTemplate = function (ref, parentRef, eventName, paramK
 Refs.prototype._renderAttr = function () {
   const _this = this;
   this._parseAttr('@', (ref, parentRef, eventName, paramKey) => {
-    const eventHandle = Obj.read(paramKey, _this.state);
+    const startIndex = paramKey.indexOf('(');
+    let key = paramKey;
+    let params = '';
+    if (startIndex !== -1) {
+      key = paramKey.substring(0, startIndex);
+      params = paramKey.substring(startIndex + 1, paramKey.length - 1);
+    }
+    const eventHandle = Obj.read(key, _this.state);
     Ref.removeAttr(ref, `@${eventName}`);
-    ref.addEventListener(eventName, function () {
-      eventHandle.call(_this.state);
+
+    let parent = ref;
+    let attrKeyArr = [];
+    while (!document.body.isEqualNode(parent)) {
+      attrKeyArr = Obj.readAsTrimArr((parent.getAttribute('~key') || '').split(','));
+      if (attrKeyArr.length > 0) {
+        const patternIndex = new RegExp(`~${attrKeyArr[3]}`, 'g')
+        params = params.replace(patternIndex, attrKeyArr[2]);
+        const patternName = new RegExp(`~${attrKeyArr[0]}`, 'g')
+        params = params.replace(patternName, `_this.state.${attrKeyArr[1]}`);
+        params = params.replace(/.([0-9]+)/g, function (match) {
+          return `[${match.substring(1, match.length)}]`;
+        });
+        break;
+      }
+      parent = parent.parentNode;
+    }
+    ref.addEventListener(eventName, function (e) {
+      if (params) {
+        eval(`eventHandle.call(_this.state, ${params})`);
+      } else {
+        eventHandle.call(_this.state, e);
+      }
     });
   })
   this._parseAttr('~', (ref, parentRef, eventName, paramKey) => {

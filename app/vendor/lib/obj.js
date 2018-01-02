@@ -49,7 +49,10 @@ Obj.readAsTrimArr = function (raw) {
   const arr = [];
   for (let i = 0; i < raw.length; i++) {
     if (typeof raw[i] == 'string') {
-      arr.push(raw[i].trim());
+      const str = raw[i].trim();
+      if (str === 0 || str) {
+        arr.push(raw[i].trim());        
+      }
     } else {
       arr.push(raw[i]);
     }

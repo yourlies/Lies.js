@@ -34,54 +34,6 @@
       </div>
     </div>
   </div>
-  <script>
-    (function () {
-      var Router = function () {
-        var app = document.querySelector('#app');
-        this.state = [app];
-        this.cache = {};
-        var _this = this;
-        window.onpopstate = function (e) {
-          var pageIndex = 0;
-          if (e.state) {
-            pageIndex = e.state.pageIndex;
-          }
-          var app = document.querySelector('#app');
-          var cacheApp = _this.state[pageIndex];
-          app.parentNode.replaceChild(cacheApp, app);
-        }
-      };
-      Router.prototype.push = function (req) {
-        var _this = this;
-        var pageIndex = this.state.length;
-        history.pushState({ pageIndex: pageIndex }, 'title', req.path);
-        if (this.cache[req.path] || this.cache[req.path] === 0) {
-          var app = document.querySelector('#app');
-          var cacheApp = this.state[this.cache[req.path]];
-          app.parentNode.replaceChild(cacheApp, app);
-          this.state.push(cacheApp);
-          return false;
-        }
-        fetch(req.path)
-        .then(function (res) {
-          return res.text();
-        })
-        .then(function (res) {
-          var container = document.createElement('div');
-          container.innerHTML = res.match(/<body(.|\t|\n)*?>((.|\t|\n)*?)<\/body>/)[2].trim();
-          var app = container.querySelector('#app');
-          var processor = container.querySelector('[processor]').innerHTML.trim();
-          var oldApp = document.querySelector('#app');
-          oldApp.parentNode.replaceChild(app, oldApp);
-          eval(processor);
-          _this.state.push(app);
-          _this.cache[req.path] = pageIndex;
-        })
-      };
-      self.Router = Router;
-      self.router = new Router();
-    })();
-  </script>
   <script src="./render.js"></script>
   <script processor>
     (function () {
@@ -89,7 +41,7 @@
         data () {
           return {
             title: '测试',
-            path: ['/yuki-frame', '', '', '', ''],
+            path: ['/', '', '', '', ''],
             links: ['Lies', '项目', '写真', '笔记', '友链'],
             activedIndex: 1,
             activedColor: 'crSkyBlue',
