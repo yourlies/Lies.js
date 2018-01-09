@@ -5,7 +5,12 @@ Obj.read = function (param, state, isEval) {
     const key = param.replace(/@/g, 'state.').replace(/\.([0-9]+)/g, function (match) {
       return `[${match.substring(1, match.length)}]`;
     });
-    return eval(`${key}`);
+    const evalValue = eval(`${key}`);
+    if (typeof evalValue == 'object') {
+      return evalValue.join(' ');
+    } else {
+      return evalValue;
+    }
   }
 
   const chips = param.split('.');

@@ -2,211 +2,145 @@ import Obj from '../lib/obj.js';
 import Ref from '../lib/ref.js';
 import Directive from '../lib/directive.js';
 
-const Refs = function (el, state) {
-  this.el = el;
-  this.state = state;
-  this.Directive = Directive;
-  this.templateElCache = [];
-  this._renderList();
-  this._getTemplateEl();
-  this._renderTemplate();
-  this._renderAttr();
-};
-
-Refs.prototype._getTemplateTraversal = function (el, elContainer) {
-  if (!el || !el.childNodes) {
+const Refs = function (state, id) {
+  this.els = [];
+  const els = document.querySelectorAll(`[ref=${state.id}]`);
+  for (let i = 0; i < els.length; i++) {
+    this.els.push(els[i]);
+  }
+  for (let i = 0; i < self.state.$els.length; i++) {
+    const elsChips = self.state.$els[i].querySelectorAll(`[ref=${state.id}]`);
+    for (let j = 0; j < elsChips.length; j++) {
+      this.els.push(elsChips[j]);
+    }
+  }
+  this.RefState = { refs: {} };
+  for (let i = 0; i < this.els.length; i++) {
+    const RefState = Ref.getTraversalTemplate(this.els[i]);
+    if (RefState.refs[state.id]) {
+      this.RefState.refs[state.id] = this.RefState.refs[state.id] || {
+        normal: [],
+        special: [],
+      };
+      this.RefState.refs[state.id].normal = this.RefState.refs[state.id].normal.concat(RefState.refs[state.id].normal);
+      this.RefState.refs[state.id].special = this.RefState.refs[state.id].special.concat(RefState.refs[state.id].special);
+    }
+  }
+  if (!this.RefState.refs[state.id]) {
     return false;
   }
-  for (let i = 0; i < el.childNodes.length; i++) {
-    const ref = el.childNodes[i];
-    if (ref.nodeType == 3 && !/\S/.test(ref.nodeValue)) {
-      ref.parentNode.removeChild(ref);
-      i--;
-    } else {
-      elContainer.push(ref);
-    }
-    this._getTemplateTraversal(ref, elContainer);
-  }
-}
+  this.id = id;
+  this.state = state;
+  this.Directive = Directive;
+  this.rawRefs = [];
+  this.rawRefsSpecial = [];
+  this._selectRawTemplate();
+  this._renderRawRefs(this.rawRefs.normal);
+  this._renderSpecialRefs(this.rawRefs.special);
+};
 
-Refs.prototype._parseAttr = function (rule, handle) {
-  for (let i = 0; i < this.templateElCache.length; i++) {
-    const ref = this.templateElCache[i];
-    if (!ref.getAttribute) {
+Refs.prototype._renderSpecialRefs = function (refs) {
+  const renderRefs = [];
+
+  for (let i = 0; i < refs.length; i++) {
+    if (!refs[i].getAttribute || !refs[i].getAttribute('~for')) {
       continue;
     }
-    const outerHTML = ref.outerHTML;
-    const rawHTML = outerHTML.match(/<.*?>/i)[0];
-    const pattern = new RegExp(`${rule}([a-z0-9]+=".*?")`, 'gi');
-    const events = rawHTML.match(pattern);
-    if (!events) {
-      continue;
-    }
-    for (let j = 0; j < events.length; j++) {
-      const index = events[j].indexOf('=');
-      const parentRef = ref.parentNode;
-      const eventName = events[j].substring(1, index);
-      const paramKey = events[j].substring(index + 2, events[j].length - 1);
-      handle(ref, parentRef, eventName, paramKey);
-    }
-  }
-}
-
-Refs.prototype._getRenderTemplateRes = function (nodeEl) {
-  const res = { paramKeyArr: [], value: '', watcher: null };
-  const watcher = (ref, handle) => {
-    return ref.nodeValue.replace(/{{([a-z0-9. ])+}}/gi, (match) => {
-      if (typeof handle == 'function') {
-        const paramKey = match.replace(/{|}| /g, '');
-        handle(paramKey);
-      }
-      const param = match.replace(/{|}| /g, '');
-      return Obj.read(param, this.state);
-    });
-  }
-  res.watcher = watcher;
-  res.value = watcher(nodeEl, (paramKey) => {
-    res.paramKeyArr.push(paramKey);
-  })
-  return res;
-}
-
-Refs.prototype._getTemplateEl = function () {
-  const elContainer = [];
-  this._getTemplateTraversal(this.el, elContainer);
-  this.templateElCache = elContainer;
-}
-
-Refs.prototype._renderList = function () {
-  const inner = this.el.innerHTML;
-  this.el.innerHTML = inner.replace(/<.*([~for]{4})(.|\s)*?<\/.*?>/, (match) => {
-    let findStartIndex = false;
-    let startIndex = -1;
-    for (let i = match.length - 1; i >= 0; i--) {
-      if (findStartIndex == true && match[i] == '<') {
-        startIndex = i;
-        break;
-      }
-      if (match[i] == '~') {
-        findStartIndex = true;
-      }
-    }
-    const uncontain = match.substring(0, startIndex);
-    const contain = match.substring(startIndex, match.length);
-    const chips = contain.match(/\~for="(.*?)"/)[1].split(' in ');
-
-    const loopParams = Obj.readAsTrimArr(chips[0].replace(/\(|\)|/g, '').split(','));
-    const name = loopParams[0];
-    const indexKey = loopParams[1] || 'index';
-    const key = chips[1];
-    const loopArr = this.state[key];
-    let render = '';
-    for (let j = 0; j < loopArr.length; j++) {
-      const pattern = new RegExp(`{{(.*?)(~${name}|~${indexKey})(.*?)}}`, 'g');
-      const templateReplace = contain.replace(pattern, function (match) {
-        return match.replace(`~${name}`, `${key}.${j}`).replace(`~${indexKey}`, j);
-      });
-      const templateAddAttrKey = templateReplace.replace(/<[a-z]+ /i, function (match) {
-        return `${match}~key="${name}, ${key}.${j}, ${j}, ${indexKey}" `;
-      })
-      render += templateAddAttrKey;
-    }
-    const inner = `${uncontain}${render}`;
-
-    return Ref.removeAttr(inner, '~for');
-  });
-}
-
-Refs.prototype._renderTemplate = function () {
-  for (let i = 0; i < this.templateElCache.length; i++) {
-    const ref = this.templateElCache[i];
-
+    const ref = refs[i];
     const refClone = ref.cloneNode(true);
-    if (ref.nodeType != 3 || !ref.nodeValue.match(/{{(.*)}}/i)) {
-      continue;
+    const parentRef = refs[i].parentNode;
+    const parentRefClone = parentRef.cloneNode(true);
+    const attrValue = refs[i].getAttribute('~for');
+    ref.removeAttribute('~for');
+    if (this.id || this.id === 0) {
+      ref.setAttribute(`lies-id-${this.id}`, '');    
     }
-
-    const res = this._getRenderTemplateRes(ref);
-    ref.nodeValue = res.value;
-
-    for (let j = 0; j < res.paramKeyArr.length; j++) {
-      const watcher = Obj.readAsArr(this.state.watch[res.paramKeyArr[j]]);
-      watcher.push(() => {
-        ref.nodeValue = res.watcher(refClone);
-      })
-      this.state.watch[res.paramKeyArr[j]] = watcher;
-    }
-  }
-}
-
-Refs.prototype._renderAttrTemplate = function (ref, parentRef, eventName, paramKey, handle, rule) {
-  const res =  Ref.detectParam(paramKey);
-  const paramKeyArr = res.arr;
-  const isEval = res.isEval;
-
-  Ref.removeAttr(ref, `${rule}${eventName}`);
-  for (let i = 0; i < paramKeyArr.length; i++) {
-    const key = paramKeyArr[i];
-    const watcher = Obj.readAsArr(this.state.watch[key]);
-    watcher.push(() => {
-      handle(eventName, ref, parentRef, paramKey);
-    });
-    this.state.watch[key] = watcher;
-  }
-  handle(eventName, ref, parentRef, paramKey);
-}
-
-Refs.prototype._renderAttr = function () {
-  const _this = this;
-  this._parseAttr('@', (ref, parentRef, eventName, paramKey) => {
-    const startIndex = paramKey.indexOf('(');
-    let key = paramKey;
-    let params = '';
-    if (startIndex !== -1) {
-      key = paramKey.substring(0, startIndex);
-      params = paramKey.substring(startIndex + 1, paramKey.length - 1);
-    }
-    const eventHandle = Obj.read(key, _this.state);
-    Ref.removeAttr(ref, `@${eventName}`);
-
-    let parent = ref;
-    let attrKeyArr = [];
-    while (!document.body.isEqualNode(parent)) {
-      attrKeyArr = Obj.readAsTrimArr((parent.getAttribute('~key') || '').split(','));
-      if (attrKeyArr.length > 0) {
-        const patternIndex = new RegExp(`~${attrKeyArr[3]}`, 'g')
-        params = params.replace(patternIndex, attrKeyArr[2]);
-        const patternName = new RegExp(`~${attrKeyArr[0]}`, 'g')
-        params = params.replace(patternName, `_this.state.${attrKeyArr[1]}`);
-        params = params.replace(/.([0-9]+)/g, function (match) {
-          return `[${match.substring(1, match.length)}]`;
-        });
-        break;
-      }
-      parent = parent.parentNode;
-    }
-    ref.addEventListener(eventName, function (e) {
-      if (params) {
-        eval(`eventHandle.call(_this.state, ${params})`);
+    const params = Obj.readAsTrimArr(attrValue.split('in'));
+    const watcher = () => {
+      Directive['for'](ref, parentRef, attrValue, this.state, refClone, parentRefClone);
+      const res = Ref.getTraversalTemplate(parentRef);
+      let rawRefs = [];
+      if (res.refs[this.state.id]) {
+        rawRefs = res.refs[this.state.id].normal;
       } else {
-        eventHandle.call(_this.state, e);
+        rawRefs = res.refs.unkind.normal;
+      }
+      this._renderRawRefs(rawRefs);
+    }
+    watcher();
+    this.state.watch[params[1]] = Obj.readAsArr(this.state.watch[params[1]]);
+    this.state.watch[params[1]].push(watcher);
+  }
+}
+
+Refs.prototype._selectRawTemplate = function () {
+  this.rawRefs = this.RefState.refs[this.state.id];
+
+  for (let i = 0; i < this.els.length; i++) {
+    this.els[i].removeAttribute('ref');
+    if (this.id || (this.id === 0)) {
+      this.els[i].setAttribute(`lies-id-${this.id}`, '');      
+    }
+  }
+}
+Refs.prototype._renderRawRefs = function (refs) {
+  for (let i = 0; i < refs.length; i++) {
+    const ref = refs[i];
+    switch (true) {
+      case ref.nodeType == 3:
+        this._renderTemplate(ref);
+        break;
+      default:
+        if (ref.setAttribute && (this.id || this.id === 0)) {
+          ref.setAttribute(`lies-id-${this.id}`, '');
+        }
+        this._renderNormalAttr(ref);
+        this._renderEventAttr(ref);
+        this._renderDirectiveAttr(ref);
+        break;
+    }
+  }
+}
+
+Refs.prototype._renderTemplate = function (ref) {
+  Ref.renderTemplate(ref, this.state);
+}
+Refs.prototype._renderNormalAttr = function (ref) {
+  Ref.renderAttr(ref, this.state, { key: ':.*' });
+}
+Refs.prototype._renderEventAttr = function (ref) {
+  const bindEvent = (params) => {
+    const { ref, parentRef, attrKey, attrValue } = params;
+    Ref.removeAttr(ref, attrKey);
+    ref.addEventListener(attrKey.substring(1), (e) => {
+      if (attrValue.match(/\([a-z0-9.@]+\)/)) {
+        Obj.read(attrValue, this.state);
+      } else {
+        Obj.read(attrValue.replace('}}', '()}}'), this.state);
       }
     });
-  })
-  this._parseAttr('~', (ref, parentRef, eventName, paramKey) => {
-    const handle = (eventName, ref, parentRef, key) => {
-      this.Directive[eventName](ref, parentRef, key, this.state);
+  }
+  Ref.renderAttr(ref, this.state, { key: '@.*', handle: bindEvent });
+}
+Refs.prototype._renderDirectiveAttr = function (ref) {
+  const bindDirective = (params) => {
+    const {
+      ref, parentRef,
+      attrKey, attrValue,
+      detects } = params;
+    const cloneRef = ref.cloneNode(true);
+    const watcher = () => {
+      Directive[attrKey.substring(1)](ref, parentRef,
+        attrValue, this.state, cloneRef);
     }
-    this._renderAttrTemplate.call(this, ref, parentRef, eventName, paramKey, handle, '~');
-  });
-  this._parseAttr(':', (ref, parentRef, eventName, paramKey) => {
-    const handle = (eventName, ref, parentRef, key) => {
-      const value = Obj.read(key, this.state);
-      const attrValue = Obj.readAsArr(value);
-      ref.setAttribute(eventName, attrValue.join(' '))
+    for (let j = 0; j < detects.length; j++) {
+      const detect = detects[j].substring(1);
+      this.state.watch[detect] = Obj.readAsArr(this.state.watch[detect]);
+      this.state.watch[detect].push(watcher);
     }
-    this._renderAttrTemplate.call(this, ref, parentRef, eventName, paramKey, handle, ':');
-  });
+    watcher();
+  }
+  Ref.renderAttr(ref, this.state, { key: '~.*', handle: bindDirective });
 }
 
 module.exports = Refs;
