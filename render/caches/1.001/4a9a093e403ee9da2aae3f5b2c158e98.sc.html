@@ -1,0 +1,33 @@
+var assistive = new Lies({
+    id: 'assistive',
+    data () {
+      return {
+        notice: 'info',
+      }
+    },
+    methods: {
+      switchUserInfo: function () {
+        if (location.pathname != '/') {
+          self.state.$components.navigate.router.push({ path: '/' });
+          return false;
+        }
+        const userInfoStatus = !self.state.$components.container.isFrontInfo;
+        self.state.$components.container.updater({ isFrontInfo: userInfoStatus });
+        const notice = userInfoStatus ? 'info' : 'back';
+        this.updater({ notice: notice });
+      },
+      processor: function () {
+        if (location.pathname == '/') {
+          const notice = self.state.$components.container.isFrontInfo ? 'info' : 'back';
+          this.updater({ notice: notice });
+        } else {
+          this.updater({ notice: 'index' });
+        }
+      }
+    }
+  });
+  new Refs(assistive,'4a9a');
+  if (location.pathname != '/') {
+    assistive.updater({ notice: 'index' });
+  }
+  state.$components.assistive = assistive;

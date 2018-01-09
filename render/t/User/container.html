@@ -1,0 +1,30 @@
+<template>
+  <div class="container f1" ref="container">
+    <div class="content">
+      <div class="component-avatar" ~if="@isFrontInfo">
+        <? $template->assign('/User/avatar'); ?>
+      </div>
+      <div class="component-avatar" ~if="!@isFrontInfo">
+        <? $template->assign('/User/info'); ?>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+  var container = new Lies({
+    id: 'container',
+    data () {
+      return {
+        isFrontInfo: false,
+      }
+    }
+  });
+  new Refs(container);
+  state.$components.container = container;
+  <? $script->assign('/User/avatar'); ?>
+  <? $script->assign('/User/info'); ?>
+</script>
+<style>
+  <? $style->assign('/User/avatar'); ?>
+  <? $style->assign('/User/info'); ?>
+</style>

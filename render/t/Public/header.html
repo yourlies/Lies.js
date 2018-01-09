@@ -1,0 +1,41 @@
+<template>
+  <header ref="header">
+    <div class="content df sa ac">
+      <div class="placeholder signed lighter mobile-hidden crfff font20 lighter">四月は君の嘘</div>
+    <nav class="links-nav df ac" ref="navigate" ref-id="<?=$hash;?>">
+      <a
+        :class="['link-nav df tc ac link crfff font20 lighter',
+          @currentIndex == ~index ? 'actived' : '']"
+        @click="@redirect(~index)"
+        ~for="link in links">
+        {{ ~link }}
+      </a>
+    </nav>
+    <div class="placeholder mobile-hidden"></div>
+    </div>
+  </header>
+</template>
+<script>
+  var header = new Lies({
+    id: 'header',
+    data () {},
+  });
+  new Refs(header);
+</script>
+<style>
+  .content {
+    background-color: #333;
+  }
+  .link-nav {
+    width: 55px;
+    height: 55px;
+    margin: 10px;
+    border-radius: 50%;
+  }
+  .link-nav.actived {
+    background-color: #555;    
+  }
+  .placeholder {
+    width: 130px;
+  }
+</style>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <? $template->assign('Public/meta') ?>
+  <title><?=$title;?></title>
+  <style>
+    <? $style->assign('/Public/header'); ?>
+    <? $style->assign('/Product/container'); ?>
+    <? $style->assign('/Tool/assistive'); ?>
+  </style>
+  <link rel="stylesheet" type="text/css" href="/a/css/l.css">
+</head>
+<body>
+  <div id="app">
+    <div class="wrap df fc">
+      <? $template->assign('/Public/header'); ?>
+      <? $template->assign('/Product/container'); ?>
+      <? $template->assign('/Tool/assistive'); ?>
+    </div>
+  </div>
+  <script src="/a/js/render.js"></script>
+  <script>
+    <? $script->assign('/Public/header'); ?>
+    <? $script->assign('/Tool/assistive'); ?>
+    <? $script->assign('/Public/navigate'); ?>
+  </script>
+  <script processor>
+    <? $script->assign('/Product/container'); ?>
+  </script>
+</body>
+</html>

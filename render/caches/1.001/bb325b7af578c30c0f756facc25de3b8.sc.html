@@ -1,0 +1,11 @@
+var avatar = new Lies({
+    id: 'avatar',
+    data () {},
+    methods: {
+      switchBackInfo: function () {
+        self.state.$components.container.updater({ isFrontInfo: false });
+        self.state.$components.assistive.updater({ notice: 'back' });
+      }
+    }
+  });
+  new Refs(avatar,'bb32');
