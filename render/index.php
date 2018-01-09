@@ -6,4 +6,4 @@ define(ASSETS_PATH, '//' . $_SERVER['HTTP_HOST'] . '/a');
 define(VERSION_ID, 1.002);
 define(DEVELOP_MODE, true);
 
-require('./route.php');
+require(ROOT_PATH . '/route.php');

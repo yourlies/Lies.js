@@ -2,33 +2,33 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <? $template->assign('Public/meta') ?>
+  <?php $template->assign('Public/meta') ?>
   <title>
     <?=$title;?>
   </title>
   <style>
-    <? $style->assign('/Public/header'); ?>
-    <? $style->assign('/Tool/assistive'); ?>
-    <? $style->assign('/User/container'); ?>
+    <?php $style->assign('/Public/header'); ?>
+    <?php $style->assign('/Tool/assistive'); ?>
+    <?php $style->assign('/User/container'); ?>
   </style>
   <link rel="stylesheet" type="text/css" href="/a/css/l.css">
 </head>
 <body>
   <div id="app">
     <div class="wrap df fc">
-      <? $template->assign('/Public/header'); ?>
-      <? $template->assign('/User/container'); ?>
-      <? $template->assign('/Tool/assistive'); ?>
+      <?php $template->assign('/Public/header'); ?>
+      <?php $template->assign('/User/container'); ?>
+      <?php $template->assign('/Tool/assistive'); ?>
     </div>
   </div>
   <script src="/a/js/render.js"></script>
   <script>
-    <? $script->assign('/Public/header'); ?>
-    <? $script->assign('/Tool/assistive'); ?>
-    <? $script->assign('/Public/navigate'); ?>
+    <?php $script->assign('/Public/header'); ?>
+    <?php $script->assign('/Tool/assistive'); ?>
+    <?php $script->assign('/Public/navigate'); ?>
   </script>
   <script processor>
-    <? $script->assign('/User/container'); ?>
+    <?php $script->assign('/User/container'); ?>
   </script>
 </body>
 </html>
