@@ -4,32 +4,6 @@
   <title></title>
 </head>
 <body>
-  <div ref="container">
-    <div ~for="link in links">
-      <input ~model="@test" :class="'asd'" :data-id="123" @keydown="@processor">
-    </div>
-  </div>
-  <script src="./build/bundle.js"></script>
-  <script>
-    var container = new Lies({
-      id: 'container',
-      data () {
-        return {
-          links: [0, 1, 2],
-          test: '123'
-        }
-      },
-      methods: {
-        processor: function (e) {
-          console.log(e)
-        }
-      }
-    });
-    new Refs(container, 0);
-
-    setTimeout(function () {
-      container.updater({ test: '321' });
-    }, 1000);
-  </script>
+  
 </body>
 </html>
