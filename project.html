@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>yuki</title>
+  <link rel="stylesheet" type="text/css" href="./l.css">
+</head>
+<body>
+  <div id="app">
+    <div class="wrap df fc">
+      <div class="container f1">
+        <header class="df tc">
+          <nav class="links-nav df">
+            <a
+              :class="['link-nav', 'df', 'tc', 'ac', 'link', @activedIndex == ~index ? 'actived ' + @activedColor : '']"
+              ~for="link in links"
+              @click="redirect(~index)">
+              {{ ~link }}
+            </a>
+          </nav>
+        </header>
+        <div :class="['main', @activedBackgroundColor]">
+          <div class="project df tc">
+            <div class="project-content">
+              <p class="project-default">暂无作品QWQ</p>
+            </div>
+          </div>
+          <div class="user-info-back">
+            <div class="tc user-info-back-content">
+              <span class="link">back</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="build/bundle.js"></script>
+  <script processor>
+    (function () {
+      var obj = new Lies({
+        data () {
+          return {
+            title: '测试',
+            path: ['/', '', '', '', ''],
+            links: ['Lies', '项目', '写真', '笔记', '友链'],
+            activedIndex: 1,
+            activedColor: 'crSkyBlue',
+            activedBackgroundColor: 'bcrSkyBlue'
+          }
+        },
+        methods: {
+          redirect: function (index) {
+            if (this.path[index]) {
+              transition.start();
+              router.push({ path: this.path[index] });
+            }
+          }
+        },
+      });
+      var el = document.getElementById('app');
+      var refsObj = new Refs(el, obj);
+      var refs = refsObj.templateElCache;
+    })();
+  </script>
+</body>
+</html>
