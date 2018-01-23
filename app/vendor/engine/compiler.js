@@ -1,5 +1,6 @@
 import DirectiveProcessor from '../lib/directive.js';
 import ObjectProcessor from '../lib/obj.js';
+import Expand from '../expand/index.js';
 
 // compiler element directive attribute
 const directiveHotMap = {
@@ -31,6 +32,7 @@ events.matcher = function (attrKey) {
 }
 events.compiler = function (params, state) {
   const { ref, attrKey, attrValue } = params;
+
   ref.removeAttribute(attrKey);
   ref.addEventListener(attrKey.substring(1), (e) => {
     setTimeout(() => {
@@ -72,7 +74,7 @@ list.matcher = function (ref) {
 }
 list.compiler = function (input, state) {
   const { ref, refClone, parentRef, parentRefClone, attrValue } = input;
-
+  Expand.list(ref, state);
   ref.removeAttribute('~for');
   const params = ObjectProcessor.readAsTrimArr(attrValue.split(' in '));
   const watcher = (hook) => {

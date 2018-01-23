@@ -1,35 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title></title>
+  <title>demo</title>
 </head>
 <body>
-  <div ref="demo">
-    <a ~if="true">{{ @str }}</a>
-    <div>
-      <i ~for="a in arr">
-        {{ ~a }}
-      </i>      
-    </div>
-    <a :style="'background-color:red;'" @click="@testFunc">点击</a>
-  </div>
   <script src="./build/bundle.js"></script>
   <script>
-    var demo = new Lies({
-      id: 'demo',
-      data () {
+    (function () {
+      const template = '<div><a ~for="a in arr"><i @click="test(a)">{{ a + \'几把\' }}</i></a></div>';
+      const data = function () {
         return {
-          str: 123,
-          arr: [0, 1, 2],
-        }
-      },
-      methods: {
-        testFunc: function () {
-          console.log(123)
+          arr: [0, 1],
         }
       }
-    });
-    new Refs(demo, 'demo');
+      const methods = {
+        test: function (e) {
+          console.log(e)
+        }
+      }
+      const refId = 'db';
+      const demoBtnA = Lies.createComponent({ data, template, methods, refId });
+    })();
   </script>
 </body>
 </html>

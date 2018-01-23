@@ -3,10 +3,20 @@ import Engine from '../engine/index.js';
 
 const Refs = function (state, hash) {
   this.hash = hash;
-  this.rawRefs = Traverse.getComponentTemplate(`[ref=${state.id}]`);
   this.state = state;
+
+  if (this.state.id.nodeType) {
+    this.state.id.setAttribute('ref', this.state.refId);
+    this.state.$el = this.state.id;
+    this.rawRefs = [this.state.id];
+    this.state.id = this.state.refId;
+    delete this.state.refId;
+  } else {
+    this.rawRefs = Traverse.getComponentTemplate(`[ref=${state.id}]`);
+  }
   
   const refs = this._combineRefs();
+
   if (refs) {
     this.renderRawRefs(refs.normal);
     this.renderSpecialRefs(refs.special);

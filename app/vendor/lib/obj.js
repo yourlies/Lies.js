@@ -64,4 +64,11 @@ Obj.readAsTrimArr = function (raw) {
   }
   return arr;
 }
+Obj.extendArr = function (arr) {
+  const container = [];
+  for (let i = 0; i < arr.length; i++) {
+    container.push(arr[i]);
+  }
+  return container;
+}
 module.exports = Obj;

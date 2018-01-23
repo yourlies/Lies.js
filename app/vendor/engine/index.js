@@ -2,13 +2,18 @@ import ObjectProcessor from '../lib/obj.js';
 import Compiler from './compiler.js';
 import Template from './template.js';
 import Traverse from './traverse.js';
+import Expand from '../expand/index.js';
 
 const processor = function (ref, state) {
   switch (true) {
     case ref.nodeType == 3:
+      Expand.template(ref, state);
       Template.render(ref, state);
       break;
+    case ref.nodeType == 8:
+      break;
     default:
+      Expand.attribute(ref, state);
       const { directive, events, normal } = Compiler.processor;
       const { worker } = Template;
       worker(ref, state, directive);
@@ -24,6 +29,7 @@ const rendering = function (ref, state) {
   }
   const parentRef = ref.parentNode;
   const attrValue = ref.getAttribute('~for');
+
   const { watcher, param } = list.compiler({
     ref, refClone: ref.cloneNode(true),
     parentRef, parentRefClone: parentRef.cloneNode(true), attrValue }, state);

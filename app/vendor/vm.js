@@ -1,4 +1,5 @@
-import Obj from './lib/obj.js';
+import ObjProcessor from './lib/obj.js';
+import Expand from './expand/index.js';
 
 const Vm = function (instance = {}) {
   instance.watch = instance.watch || {};
@@ -6,19 +7,24 @@ const Vm = function (instance = {}) {
   this._methods = instance.methods || {};
   delete instance.data;
   delete instance.methods;
-  Obj.copy(this._data(), this);
-  Obj.copy(this._methods, this);
-  Obj.copy(instance, this);
+
+  const data = {};
+  ObjProcessor.copy(this._data(), data);
+  this.$data = data;
+  ObjProcessor.copy(this._methods, this);
+  ObjProcessor.copy(instance, this);
+
+  Expand.updater(this);
 }
-Vm.prototype.updater = function (obj) {
+Vm.prototype.updater = function (obj, force) {
   for (var key in obj) {
-    const oldVal = Obj.read(key, this);
+    const oldVal = ObjProcessor.read(key, this);
     const newVal = obj[key];
-    const watcher = Obj.readAsArr(this.watch[key]);
-    if (newVal == oldVal) {
+    const watcher = ObjProcessor.readAsArr(this.watch[key]);
+    if (newVal == oldVal && !force) {
       continue;
     }
-    Obj.store(key, this, obj[key]);
+    ObjProcessor.store(key, this, obj[key]);
     this.watch[key] = watcher;
     for (let i = 0; i < watcher.length; i++) {
       watcher[i].call(this, newVal, oldVal);
