@@ -1,7 +1,5 @@
-import Obj from '../lib/obj.js';
-import Compiler from '../engine/compiler.js';
-import Template from '../engine/template.js';
 import Traverse from '../engine/traverse.js';
+import Engine from '../engine/index.js';
 
 const Refs = function (state, hash) {
   this.hash = hash;
@@ -42,50 +40,13 @@ Refs.prototype._combineRefs = function () {
   return this.refs[this.state.id];
 }
 Refs.prototype.renderSpecialRefs = function (refs) {
-  const list = Compiler.processor.list;
   for (let i = 0; i < refs.length; i++) {
-    const ref = refs[i];
-    if (!list.matcher(ref)) {
-      continue;
-    }
-    const parentRef = ref.parentNode;
-    const attrValue = refs[i].getAttribute('~for');
-    const { watcher, param } = list.compiler({
-      ref, refClone: ref.cloneNode(true),
-      parentRef, parentRefClone: parentRef.cloneNode(true), attrValue }, this.state);
-
-    const observer = () => {
-      watcher(() => {
-        const res = Traverse.getTraversalTemplate(parentRef);
-        let rawRefs = [];
-        if (res.refs[state.id]) {
-          rawRefs = res.refs[state.id].normal;
-        } else {
-          rawRefs = res.refs.unkind.normal;
-        }
-        this.renderRawRefs(rawRefs);
-      });
-    }
-    observer();
-    this.state.watch[param] = Obj.readAsArr(this.state.watch[param]);
-    this.state.watch[param].push(observer);
+    Engine.rendering(refs[i], this.state);
   }
 }
 Refs.prototype.renderRawRefs = function (refs) {
   for (let i = 0; i < refs.length; i++) {
-    const ref = refs[i];
-    switch (true) {
-      case ref.nodeType == 3:
-        Template.render(ref, this.state);
-        break;
-      default:
-        const { directive, events, normal } = Compiler.processor;
-        const { worker } = Template;
-        worker(ref, this.state, directive);
-        worker(ref, this.state, events);
-        worker(ref, this.state, normal);
-        break;
-    }
+    Engine.processor(refs[i], this.state);
   }
 }
 
