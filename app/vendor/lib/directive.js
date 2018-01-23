@@ -1,6 +1,5 @@
 import Obj from './obj.js';
 import Str from './str.js';
-import Ref from './ref.js';
 
 let markCount = 0;
 const commentRefs = [];
@@ -101,6 +100,7 @@ directives.for = function (ref, parentRef, attrValue, state, cloneRef, clonePare
   const arrName = conditions[0];
   const outerHTML = ref.outerHTML;
   let renderHTML = '';
+
   const forArr = Obj.read(conditions[1], state);
   for (let i = 0; i < forArr.length; i++) {
     const pattern = new RegExp(`~${arrName}`, 'g');

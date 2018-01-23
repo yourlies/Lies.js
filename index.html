@@ -5,8 +5,12 @@
 </head>
 <body>
   <div ref="demo">
-    <a ~if="false">{{ @str }}</a>
     <a ~if="true">{{ @str }}</a>
+    <div>
+      <i ~for="a in arr">
+        {{ ~a }}
+      </i>      
+    </div>
     <a :style="'background-color:red;'" @click="@testFunc">点击</a>
   </div>
   <script src="./build/bundle.js"></script>
@@ -16,6 +20,7 @@
       data () {
         return {
           str: 123,
+          arr: [0, 1, 2],
         }
       },
       methods: {
