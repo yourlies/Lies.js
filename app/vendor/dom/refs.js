@@ -1,6 +1,8 @@
 import Obj from '../lib/obj.js';
 import Ref from '../lib/ref.js';
 import Directive from '../lib/directive.js';
+import Compiler from '../engine/compiler.js';
+import Template from '../engine/template.js';
 
 const Refs = function (state, hash) {
   this.hash = hash;
@@ -49,7 +51,6 @@ Refs.prototype._getNeedRenderRefs = function (refId) {
   }
   return refsContainer;
 }
-// 
 Refs.prototype._renderSpecialRefs = function (refs) {
   const renderRefs = [];
 
@@ -85,67 +86,16 @@ Refs.prototype._renderRawRefs = function (refs) {
     const ref = refs[i];
     switch (true) {
       case ref.nodeType == 3:
-        this._renderTemplate(ref);
+        Template.render(ref, this.state);
         break;
       default:
-        this._renderNormalAttr(ref);
-        this._renderEventAttr(ref);
-        this._renderDirectiveAttr(ref);
+        const { directive, events, normal } = Compiler.processor;
+        Compiler.worker(ref, this.state, directive);
+        Compiler.worker(ref, this.state, events);
+        Compiler.worker(ref, this.state, normal);
         break;
     }
   }
-}
-// 
-Refs.prototype._renderTemplate = function (ref) {
-  Ref.renderTemplate(ref, this.state);
-}
-Refs.prototype._renderNormalAttr = function (ref) {
-  Ref.renderAttr(ref, this.state, { key: ':' });
-}
-Refs.prototype._renderEventAttr = function (ref) {
-  const bindEvent = (params) => {
-    const { ref, parentRef, attrKey, attrValue } = params;
-    Ref.removeAttr(ref, attrKey);
-    ref.addEventListener(attrKey.substring(1), (e) => {
-      setTimeout(() => {
-        if (attrValue.match(/\([a-z0-9.@]+\)/)) {
-          Obj.read(attrValue, this.state);
-        } else {
-          this.state.$events = this.state.$events || {};
-          this.state.$events.e = e;
-          Obj.read(attrValue.replace('}}', '(@$events.e)}}'), this.state);
-        }
-      })
-    });
-  }
-  Ref.renderAttr(ref, this.state, { key: '@', handle: bindEvent });
-}
-Refs.prototype._renderDirectiveAttr = function (ref) {
-  const map = {
-    'if': true,
-    'focus': true,
-  }
-  const bindDirective = (params) => {
-    const {
-      ref, parentRef,
-      attrKey, attrValue,
-      detects } = params;
-    const cloneRef = ref.cloneNode(true);
-    const watcher = () => {
-      const needWatch = Directive[attrKey.substring(1)](ref, parentRef,
-        attrValue, this.state, cloneRef);
-      return needWatch;
-    }
-    watcher();
-    if (map[attrKey.substring(1)]) {
-      for (let j = 0; j < detects.length; j++) {
-        const detect = detects[j].substring(1);
-        this.state.watch[detect] = Obj.readAsArr(this.state.watch[detect]);
-        this.state.watch[detect].push(watcher);
-      }
-    }
-  }
-  Ref.renderAttr(ref, this.state, { key: '~', handle: bindDirective });
 }
 
 module.exports = Refs;

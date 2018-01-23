@@ -1,4 +1,4 @@
-import Lies from './vendor/loader.js';
+import Lies from './vendor/vm.js';
 import Refs from './vendor/dom/refs.js';
 import Router from './vendor/plugin/router.js';
 import Transition from './vendor/plugin/transition.js';

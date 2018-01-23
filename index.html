@@ -4,6 +4,27 @@
   <title></title>
 </head>
 <body>
-  
+  <div ref="demo">
+    <a ~if="false">{{ @str }}</a>
+    <a ~if="true">{{ @str }}</a>
+    <a :style="'background-color:red;'" @click="@testFunc">点击</a>
+  </div>
+  <script src="./build/bundle.js"></script>
+  <script>
+    var demo = new Lies({
+      id: 'demo',
+      data () {
+        return {
+          str: 123,
+        }
+      },
+      methods: {
+        testFunc: function () {
+          console.log(123)
+        }
+      }
+    });
+    new Refs(demo, 'demo');
+  </script>
 </body>
 </html>
