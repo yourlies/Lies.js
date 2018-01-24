@@ -12,6 +12,7 @@ const Vm = function (instance = {}) {
   ObjProcessor.copy(this._data(), data);
   this.$data = data;
   ObjProcessor.copy(this._methods, this);
+  ObjProcessor.copy(data, this);
   ObjProcessor.copy(instance, this);
 
   Expand.updater(this);

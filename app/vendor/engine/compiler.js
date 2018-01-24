@@ -9,12 +9,12 @@ const directiveHotMap = {
 };
 const directive = {};
 directive.matcher = function (attrKey) {
-  return attrKey[0] == '~';
+  return attrKey.substring(0, 2) == 'i-';
 }
 directive.compiler = function (params, state) {
   const { ref, parentRef, attrKey, attrValue, detects } = params;
   const cloneRef = ref.cloneNode(true);
-  const processer = attrKey.substring(1);
+  const processer = attrKey.substring(2);
   const watcher = () => {
     DirectiveProcessor[processer](ref, parentRef, attrValue, state, cloneRef);
   }
@@ -28,15 +28,15 @@ directive.compiler = function (params, state) {
 // compiler element events attribute
 const events = {};
 events.matcher = function (attrKey) {
-  return attrKey[0] == '@';
+  return attrKey.substring(0, 2) == 'e-';
 }
 events.compiler = function (params, state) {
   const { ref, attrKey, attrValue } = params;
 
   ref.removeAttribute(attrKey);
-  ref.addEventListener(attrKey.substring(1), (e) => {
+  ref.addEventListener(attrKey.substring(2), (e) => {
     setTimeout(() => {
-      if (attrValue.match(/\([a-z0-9.@]+\)/)) {
+      if (attrValue.match(/\([a-z0-9.@]+\)/i)) {
         ObjectProcessor.read(attrValue, state);
       } else {
         state.$events = state.$events || {};
@@ -49,7 +49,7 @@ events.compiler = function (params, state) {
 // compiler element normal attribute
 const normal = {};
 normal.matcher = function (attrKey) {
-  return attrKey[0] == ':';
+  return attrKey.substring(0, 2) == 'r-';
 }
 normal.compiler = function (params, state) {
   const { ref, attrKey, template, detects } = params;
@@ -70,20 +70,17 @@ normal.compiler = function (params, state) {
 // compiler element list attribute
 const list = {};
 list.matcher = function (ref) {
-  return ref.getAttribute && ref.getAttribute('~for');
+  return ref.getAttribute && ref.getAttribute('i-for');
 }
 list.compiler = function (input, state) {
-  const { ref, refClone, parentRef, parentRefClone, attrValue } = input;
-  Expand.list(ref, state);
-  ref.removeAttribute('~for');
-  const params = ObjectProcessor.readAsTrimArr(attrValue.split(' in '));
+  const { ref, refClone, parentRef, parentRefClone } = input;
   const watcher = (hook) => {
-    DirectiveProcessor['for'](ref, parentRef, attrValue, state, refClone, parentRefClone);
+    DirectiveProcessor['for'](ref, parentRef, refClone, parentRefClone, state);
     if (typeof hook == 'function') {
       hook();
     }
   }
-  return { watcher, param: params[1] };
+  return { watcher };
 }
 
 module.exports = { processor: { directive, events, normal, list } };

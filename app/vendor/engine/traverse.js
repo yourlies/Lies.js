@@ -26,7 +26,7 @@ state._getTraversalTemplate = function (el, refs, refName, refSpecial, refId) {
   refName = refName || 'unkind';
   if (el.getAttribute) {
     refName = el.getAttribute('ref') || refName;
-    refSpecial = el.getAttribute('~for') && el;
+    refSpecial = el.getAttribute('i-for') && el;
     refId = el.getAttribute('ref-id') || refId;
     if (refId) {
       el.setAttribute(`lies-id-${refId}`, '');
@@ -40,8 +40,8 @@ state._getTraversalTemplate = function (el, refs, refName, refSpecial, refId) {
     } else {
       refs[refName] = refs[refName] || { normal: [], special: [] };
       if ((refSpecial && refSpecial.contains(ref))
-        || (ref.getAttribute && ref.getAttribute('~for'))
-        || state.ifParentNodeMatchAttr(ref, '~for=*')) {
+        || (ref.getAttribute && ref.getAttribute('i-for'))
+        || state.ifParentNodeMatchAttr(ref, 'i-for=*')) {
           refs[refName].special.push(ref);
         } else {
         refs[refName].normal.push(ref);

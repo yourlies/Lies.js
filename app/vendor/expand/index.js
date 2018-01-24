@@ -1,7 +1,7 @@
 import StringProcessor from '../lib/str.js';
 import ObjectProcessor from '../lib/obj.js';
-import Traverse  from '../engine/traverse.js';
 import PatternProcessor from '../lib/pattern.js';
+import Traverse  from '../engine/traverse.js';
 
 const attribute = function (ref, state) {
   const attributes = [];
@@ -11,11 +11,11 @@ const attribute = function (ref, state) {
     attributes.push({ key: ref.attributes[i].name, value: ref.attributes[i].value })
   }
   for (let i = 0; i < attributes.length; i++) {
-    if (PatternProcessor.needmarkattribute(attributes[i])) {
+    if (PatternProcessor.needmarkattribute(attributes[i].key)) {
       const key = attributes[i].key;
       let value = attributes[i].value;
       value = value.replace(PatternProcessor.maps.param, function (match) {
-        if (PatternProcessor.needmarkedparam(match)) {
+        if (PatternProcessor.needmarkedparam(match) && key != 'i-for') {
           return `@${match}`;
         } else {
           return match;
@@ -27,7 +27,7 @@ const attribute = function (ref, state) {
 }
 
 const updater = function (state) {
-  for (var key in state.$data) {
+  for (let key in state.$data) {
     Object.defineProperty(state, key, {
       get : function () {
         return state.$data[key];
@@ -64,12 +64,15 @@ const template = function (ref, state) {
 }
 
 const list = function (ref, state) {
-  const params = ref.getAttribute('~for');
-  const res = Traverse.getTraversalTemplate(ref);
-  for (let i = 0; i < res.refs.unkind.special.length; i++) {
-    const el = res.refs.unkind.special[i];
+  const key = ref.getAttribute('i-for-key');
+  const index = ref.getAttribute('i-for-index');
+
+  const resTarversal = Traverse.getTraversalTemplate(ref);
+  resTarversal.refs.unkind.normal.push(ref);
+  for (let i = 0; i < resTarversal.refs.unkind.normal.length; i++) {
+    const el = resTarversal.refs.unkind.normal[i];
     if (el.nodeType == 3) {
-      const render = [];
+      const res = [];
       const matches = StringProcessor.matchCloseTag('{{', '}}', el.nodeValue);
       for (let i = 0; i < matches.length; i++) {
         if (matches[i].isClose) {
@@ -78,34 +81,36 @@ const list = function (ref, state) {
               if (!PatternProcessor.needmarkedparam(match)) {
                 return match;
               }
-              if (match == params[0]) {
-                return `~${match}`;
+              const meta = match.match(/[0-9a-z]+/i);
+              if (meta[0] == key || meta[0] == index) {
+                return `(##${meta[0]}##)${match.substring(meta[0].length)}`;
               } else {
                 return `@${match}`;
               }
             }
           )) + '}}';
         }
-        render.push(matches[i].str);
+        res.push(matches[i].str);
       }
-      el.nodeValue = render.join('');
+      el.nodeValue = res.join('');
     } else if (el.attributes) {
       const attributes = ObjectProcessor.extendArr(el.attributes);
       for (let i = 0; i < attributes.length; i++) {
-        const attr = attributes[i];
-        if (PatternProcessor.needmarkattribute) {
-          let value = attr.value;
-          value = value.replace(/[@0-9.a-z'"]+/g, function (match) {
+        const attribute = attributes[i];
+        if (PatternProcessor.needmarkattribute(attribute.name)) {
+          let value = attribute.value;
+          value = value.replace(PatternProcessor.maps.param, function (match) {
             if (!PatternProcessor.needmarkedparam(match)) {
               return match;
             }
-            if (match == params[0]) {
-              return `~${match}`;
+            const meta = match.match(/[0-9a-z]+/i);
+            if (meta[0] == key || meta[0] == index) {
+              return `(##${meta[0]}##)${match.substring(meta[0].length)}`;
             } else {
               return `@${match}`;
             }
           });
-          attr.value = value;
+          attribute.value = value;
         }
       }
     }

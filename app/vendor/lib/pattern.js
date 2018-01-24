@@ -1,10 +1,10 @@
 const maps = {
-  param: new RegExp('[@0-9.a-z\'"]+', 'g'),
+  param: new RegExp('[@0-9.a-z\'"]+', 'gi'),
 }
 
 const needmarkedparam = function (input) {
-  if (input.match(/'[0-9.a-z]+'/)
-    || input.match(/"[0-9.a-z]+"/)
+  if (input.match(/'[0-9.a-z]+'/i)
+    || input.match(/"[0-9.a-z]+"/i)
     || input.match(/[']+/)
     || input.match(/["]+/)
     || input == 'true'
@@ -20,7 +20,11 @@ const needmarkedparam = function (input) {
 }
 
 const needmarkattribute = function (input) {
-  return input.key[0] == '~' || input.key[0] == '@' || input.key[0] == ':';
+  const prefix = input.substring(0, 2);
+  if (input.substring(0, 5) == 'i-for') {
+    return false;
+  }
+  return prefix == 'i-' || prefix == 'e-' || prefix == 'r-';
 }
 
 module.exports = { needmarkedparam, needmarkattribute, maps };

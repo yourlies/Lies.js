@@ -2,7 +2,7 @@ import Traverse from '../engine/traverse.js';
 import Engine from '../engine/index.js';
 
 const Refs = function (state, hash) {
-  this.hash = hash;
+  this.hash = hash || '';
   this.state = state;
 
   if (this.state.id.nodeType) {
@@ -26,7 +26,7 @@ const Refs = function (state, hash) {
 Refs.prototype._combineRefs = function () {
   this.refs = {};
   for (let i = 0; i < this.rawRefs.length; i++) {
-    if (this.rawRefs[i].getAttribute && !this.rawRefs[i].getAttribute('ref-id')) {
+    if (this.rawRefs[i].getAttribute && !this.rawRefs[i].getAttribute('ref-id') && this.hash) {
       this.rawRefs[i].setAttribute('ref-id', this.hash);
     }
     const refState = Traverse.getTraversalTemplate(this.rawRefs[i]);

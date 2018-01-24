@@ -4,14 +4,18 @@ Str.trim = function (str, remove) {
   return this.ltrim(this.rtrim(str, remove), remove);
 }
 Str.ltrim = function (str, remove) {
-  const pattern = new RegExp(remove);
-  const replace = (str[0] || '').replace(pattern, '');
-  return `${replace}${str.substring(1, str.length)}`;
+  if (str[0] == remove) {
+    return str.substring(1);
+  } else {
+    return str;
+  }
 }
 Str.rtrim = function (str, remove) {
-  const pattern = new RegExp(remove);
-  const replace = (str[str.length - 1] || '').replace(pattern, '');
-  return `${str.substring(0, str.length - 1)}${replace}`;
+  if (str[str.length - 1] == remove) {
+    return str.substring(0, str.length - 1);
+  } else {
+    return str;
+  }
 }
 Str.matchCloseTag = function (start, end, str) {
   const matches = str.split(end);

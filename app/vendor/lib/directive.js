@@ -94,23 +94,32 @@ directives.fade = function (ref, parentRef, attrValue, state) {
     rafId = requestAnimationFrame(raf);
   }
 }
-directives.for = function (ref, parentRef, attrValue, state, cloneRef, cloneParentRef) {
-  const conditions = Obj.readAsTrimArr(attrValue.split(' in '));
-  const arrKey = conditions[1];
-  const arrName = conditions[0];
+directives.for = function (ref, parentRef, cloneRef, cloneParentRef, state) {
+  const forKey = ref.getAttribute('i-for-key');
+  const forName = ref.getAttribute('i-for-name');
+  const forIndex = ref.getAttribute('i-for-index');
+
+  ref.removeAttribute('i-for-key');
+  ref.removeAttribute('i-for-index');
+  ref.removeAttribute('i-for-name');
+
   const outerHTML = ref.outerHTML;
   let renderHTML = '';
+  const forArr = Obj.read(forName, state);
 
-  const forArr = Obj.read(conditions[1], state);
+
   for (let i = 0; i < forArr.length; i++) {
-    const pattern = new RegExp(`~${arrName}`, 'g');
-    let replace = Str.trim(arrKey, '[@.]');
+    const pattern = new RegExp(`\\(##${forKey}##\\)`, 'g');
+    let replace = Str.trim(forName, '[@.]');
     let replaceHTML = outerHTML.replace(pattern, `@${replace}.${i}`);
-    replaceHTML = replaceHTML.replace(/~index/g, i);
+
+    const tPattern = new RegExp(`\\(##${forIndex}##\\)`, 'g');
+
+    replaceHTML = replaceHTML.replace(tPattern, i);
     renderHTML += replaceHTML;
   }
 
-  const forId = cloneRef.getAttribute('for-id');
+  const forId = cloneRef.getAttribute('m-for-id');
   if (forId) {
     const pattern = new RegExp(`<!--~for-${forId}-->(.|\t|\n)*?<!--~end-for-${forId}-->`, 'i');
     parentRef.innerHTML = parentRef.innerHTML.replace(pattern, function (match) {
@@ -119,7 +128,7 @@ directives.for = function (ref, parentRef, attrValue, state, cloneRef, clonePare
     return false;
   }
 
-  cloneRef.setAttribute('for-id', markCount);
+  cloneRef.setAttribute('m-for-id', markCount);
   const startMark = document.createComment(`~for-${markCount}`);
   const endMark = document.createComment(`~end-for-${markCount}`);
   parentRef.insertBefore(startMark, ref);

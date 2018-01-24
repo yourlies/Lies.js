@@ -1,4 +1,5 @@
 import ObjectProcessor from '../lib/obj.js';
+import StringProcessor from '../lib/str.js';
 import Compiler from './compiler.js';
 import Template from './template.js';
 import Traverse from './traverse.js';
@@ -27,12 +28,33 @@ const rendering = function (ref, state) {
   if (!list.matcher(ref)) {
     return false;
   }
-  const parentRef = ref.parentNode;
-  const attrValue = ref.getAttribute('~for');
 
-  const { watcher, param } = list.compiler({
-    ref, refClone: ref.cloneNode(true),
-    parentRef, parentRefClone: parentRef.cloneNode(true), attrValue }, state);
+  const condition = ref.getAttribute('i-for');
+  const params = condition.split(' in ');
+  const name = params[1].trim();
+  let param = params[0];
+  param = StringProcessor.ltrim(param, '(');
+  param = StringProcessor.rtrim(param, ')');
+  const chips = param.split(',');
+  const key = chips[0].trim();
+  const index = (chips[1] || '').trim();
+  if (index) {
+    ref.setAttribute('i-for-index', index);
+  }
+  ref.setAttribute('i-for-key', key);
+  ref.setAttribute('i-for-name', name);
+  ref.removeAttribute('i-for');
+
+  Expand.list(ref, state);
+
+  const parentRef = ref.parentNode;
+
+  const { watcher } = list.compiler({
+    ref, parentRef,
+    refClone: ref.cloneNode(true),
+    parentRefClone: parentRef.cloneNode(true)
+  }, state);
+
   const observer = () => {
     watcher(() => {
       const res = Traverse.getTraversalTemplate(parentRef);
@@ -49,8 +71,8 @@ const rendering = function (ref, state) {
     });
   }
   observer();
-  state.watch[param] = ObjectProcessor.readAsArr(state.watch[param]);
-  state.watch[param].push(observer);
+  state.watch[name] = ObjectProcessor.readAsArr(state.watch[name]);
+  state.watch[name].push(observer);
 }
 
 module.exports = { processor, rendering };
