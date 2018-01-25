@@ -6,20 +6,19 @@
 <body>
   <script src="./build/bundle.js"></script>
   <script>
-    (function () {
-      const demo = Lies.createComponent({
-        template: '<div><a i-for="(num, numIndex) in nums" e-click="fuck(numIndex)">{{ num }}</a></div>',
-        data () {
-          return { nums: [0, 1, 2], str: 'string' }
-        },
-        methods: {
-          fuck (e) {
-            console.log(e);
-          }
+    var demo = Lies.createComponent({
+      template: '<div><div i-if="test">{{ str }}</div></div>',
+      data: function () {
+        return {
+          arr: [0, 1],
+          str: 'Are you ok?',
+          test: true,
         }
-      });
-      demo.str = 'asdad';
-    })();
+      },
+    });
+    setTimeout(() => {
+      demo.test = false;
+    }, 2000)
   </script>
 </body>
 </html>
