@@ -8,12 +8,9 @@
   <script>
     (function () {
       const demo = Lies.createComponent({
-        template: '<div><a i-for="(num, numIndex) in nums">{{ num }}</a></div>',
+        template: '<div><a i-for="(num, numIndex) in nums" e-click="fuck(numIndex)">{{ num }}</a></div>',
         data () {
-          return {
-            nums: [0, 1, 2],
-            str: 'string',
-          }
+          return { nums: [0, 1, 2], str: 'string' }
         },
         methods: {
           fuck (e) {
