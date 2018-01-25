@@ -11,18 +11,24 @@ const directive = {};
 directive.matcher = function (attrKey) {
   return attrKey.substring(0, 2) == 'i-';
 }
-directive.compiler = function (params, state) {
-  const { ref, parentRef, attrKey, attrValue, detects } = params;
+directive.compiler = function ({ ref, name, value, detect, state }) {
+  const parentRef = ref.parentNode;
   const cloneRef = ref.cloneNode(true);
-  const processer = attrKey.substring(2);
+  const processer = name.substring(2);
+  ref.removeAttribute(name);
   const watcher = () => {
-    DirectiveProcessor[processer](ref, parentRef, attrValue, state, cloneRef);
+    DirectiveProcessor[processer]({
+      ref, parentRef, cloneRef, value, state,
+    });
   }
   watcher();
-  for (let j = 0; j < detects.length; j++) {
-    const detect = detects[j].substring(1);
-    state.watch[detect] = ObjectProcessor.readAsArr(state.watch[detect]);
-    state.watch[detect].push(watcher);
+  if (!directiveHotMap[processer]) {
+    return false;
+  }
+  for (let i = 0; i < detect.length; i++) {
+    const param = detect[i].substring(1);
+    state.watch[param] = ObjectProcessor.readAsArr(state.watch[param]);
+    state.watch[param].push(watcher);
   }
 }
 // compiler element events attribute
@@ -30,18 +36,17 @@ const events = {};
 events.matcher = function (attrKey) {
   return attrKey.substring(0, 2) == 'e-';
 }
-events.compiler = function (params, state) {
-  const { ref, attrKey, attrValue } = params;
-
-  ref.removeAttribute(attrKey);
-  ref.addEventListener(attrKey.substring(2), (e) => {
+events.compiler = function ({ ref, name, value, detect, state }) {
+  ref.removeAttribute(name);
+  const event = name.substring(2);
+  ref.addEventListener(event, (e) => {
     setTimeout(() => {
-      if (attrValue.match(/\([a-z0-9.@]+\)/i)) {
-        ObjectProcessor.read(attrValue, state);
+      if (value.match(/\([a-z0-9.@]+\)/i)) {
+        ObjectProcessor.read(value, state);
       } else {
         state.$events = state.$events || {};
         state.$events.e = e;
-        ObjectProcessor.read(attrValue.replace('}}', '(@$events.e)}}'), state);
+        ObjectProcessor.read(`${value}(@$events.e)`, state);
       }
     })
   });
@@ -51,20 +56,19 @@ const normal = {};
 normal.matcher = function (attrKey) {
   return attrKey.substring(0, 2) == 'r-';
 }
-normal.compiler = function (params, state) {
-  const { ref, attrKey, template, detects } = params;
-  const replaceAttr = attrKey.substring(1);
-  const replaceValue = ObjectProcessor.read(template, state);
-  ref.removeAttribute(attrKey);
-  ref.setAttribute(replaceAttr, replaceValue);
-  var watcher = function () {
-    const value = ObjectProcessor.read(template, state);
-    ref.setAttribute(replaceAttr, value);
+normal.compiler = function ({ ref, name, value, detect, state }) {
+  const renderName = name.substring(2);
+  const renderValue = ObjectProcessor.read(value, state);
+  ref.removeAttribute(name);
+  ref.setAttribute(renderName, renderValue);
+  const watcher = function () {
+    const renderValue = ObjectProcessor.read(value, state);
+    ref.setAttribute(renderName, renderValue);
   }
-  for (let j = 0; j < detects.length; j++) {
-    const detect = detects[j].substring(1);
-    state.watch[detect] = ObjectProcessor.readAsArr(state.watch[detect]);
-    state.watch[detect].push(watcher);
+  for (let i = 0; i < detect.length; i++) {
+    const param = detect[i].substring(1);
+    state.watch[param] = ObjectProcessor.readAsArr(state.watch[param]);
+    state.watch[param].push(watcher);
   }
 }
 // compiler element list attribute

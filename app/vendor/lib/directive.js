@@ -8,7 +8,7 @@ const directives = {};
 directives.focus = function (ref) {
   ref.focus();
 }
-directives.if = function (ref, parentRef, attrValue, state, cloneRef) {
+directives.if = function ({ ref, parentRef, value, state, cloneRef }) {
   let ifId = cloneRef.getAttribute('if-id');
   let commentRef = '';
   if (ifId) {
@@ -20,11 +20,8 @@ directives.if = function (ref, parentRef, attrValue, state, cloneRef) {
     ifId = commentRefs.length;
     commentRefs.push(commentRef);
   }
-
-
-  ref.removeAttribute('~if');
-  const value = Obj.read(attrValue, state);
-  if (!value) {
+  const renderValue = Obj.read(value, state);
+  if (!renderValue) {
     parentRef.replaceChild(commentRef, ref);
     return false;
   } else {
@@ -105,8 +102,7 @@ directives.for = function (ref, parentRef, cloneRef, cloneParentRef, state) {
 
   const outerHTML = ref.outerHTML;
   let renderHTML = '';
-  const forArr = Obj.read(forName, state);
-
+  const forArr = Obj.read(`@${forName}`, state);
 
   for (let i = 0; i < forArr.length; i++) {
     const pattern = new RegExp(`\\(##${forKey}##\\)`, 'g');

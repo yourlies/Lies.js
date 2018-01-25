@@ -19,7 +19,7 @@ const Vm = function (instance = {}) {
 }
 Vm.prototype.updater = function (obj, force) {
   for (var key in obj) {
-    const oldVal = ObjProcessor.read(key, this);
+    const oldVal = ObjProcessor.read(`@${key}`, this);
     const newVal = obj[key];
     const watcher = ObjProcessor.readAsArr(this.watch[key]);
     if (newVal == oldVal && !force) {

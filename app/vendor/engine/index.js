@@ -5,6 +5,8 @@ import Template from './template.js';
 import Traverse from './traverse.js';
 import Expand from '../expand/index.js';
 
+const { directive, events, normal } = Compiler.processor;
+const { worker } = Template;
 const processor = function (ref, state) {
   switch (true) {
     case ref.nodeType == 3:
@@ -14,12 +16,17 @@ const processor = function (ref, state) {
     case ref.nodeType == 8:
       break;
     default:
-      Expand.attribute(ref, state);
-      const { directive, events, normal } = Compiler.processor;
-      const { worker } = Template;
-      worker(ref, state, directive);
-      worker(ref, state, events);
-      worker(ref, state, normal);
+      if (!ref.attributes) {
+        break;
+      }
+      const attributes = ObjectProcessor.extendArr(ref.attributes);
+      for (let i = 0; i < attributes.length; i++) {
+        const attribute = attributes[i];
+        Expand.attribute(attribute, state);
+        worker({ attribute, state, processor: normal, ref });
+        worker({ attribute, state, processor: directive, ref });
+        worker({ attribute, state, processor: events, ref });
+      }
       break;
   }
 }
@@ -45,7 +52,12 @@ const rendering = function (ref, state) {
   ref.setAttribute('i-for-name', name);
   ref.removeAttribute('i-for');
 
-  Expand.list(ref, state);
+  const renderRefs = Traverse.getTraversalTemplate(ref).refs;
+  renderRefs.unkind.normal.push(ref);
+  for (let i = 0; i < renderRefs.unkind.normal.length; i++) {
+    const renderRef = renderRefs.unkind.normal[i];
+    Expand.list({ ref: renderRef, key, index, state });
+  }
 
   const parentRef = ref.parentNode;
 

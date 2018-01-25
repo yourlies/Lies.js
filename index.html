@@ -4,27 +4,24 @@
   <title>demo</title>
 </head>
 <body>
-  <div ref="demo">
-    <a e-click="demo(privateNotice)">{{ privateNotice }}</a>
-  </div>
   <script src="./build/bundle.js"></script>
   <script>
     (function () {
-      const demo = new Lies({
-        id: 'demo',
+      const demo = Lies.createComponent({
+        template: '<div><a i-for="(num, numIndex) in nums">{{ num }}</a></div>',
         data () {
           return {
-            privateNotice: 'string',
-            arr: [{ name: 'as' }, { name: 'fuck' }],
+            nums: [0, 1, 2],
+            str: 'string',
           }
         },
         methods: {
-          demo (name) {
-            console.log(name)
+          fuck (e) {
+            console.log(e);
           }
         }
       });
-      new Refs(demo);
+      demo.str = 'asdad';
     })();
   </script>
 </body>

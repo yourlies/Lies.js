@@ -21,7 +21,7 @@ Obj.read = function (param, state, isEval) {
     }
     return res;
   }
-  return state[param];
+  return eval(param);
 }
 Obj.store = function (param, state, val) {
   const chips = param.split('.');
