@@ -6,11 +6,7 @@ Obj.read = function (param, state, isEval) {
       return `[${match.substring(1, match.length)}]`;
     });
     const evalValue = eval(`${key}`);
-    if (evalValue instanceof Array) {
-      return evalValue.join(' ');
-    } else {
-      return evalValue;
-    }
+    return evalValue;
   }
 
   const chips = param.split('.');

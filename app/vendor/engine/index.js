@@ -36,6 +36,8 @@ const rendering = function (ref, state) {
     return false;
   }
 
+  const refClone = ref.cloneNode(true);
+
   const condition = ref.getAttribute('i-for');
   const params = condition.split(' in ');
   const name = params[1].trim();
@@ -46,10 +48,10 @@ const rendering = function (ref, state) {
   const key = chips[0].trim();
   const index = (chips[1] || '').trim();
   if (index) {
-    ref.setAttribute('i-for-index', index);
+    refClone.setAttribute('i-for-index', index);
   }
-  ref.setAttribute('i-for-key', key);
-  ref.setAttribute('i-for-name', name);
+  refClone.setAttribute('i-for-key', key);
+  refClone.setAttribute('i-for-name', name);
   ref.removeAttribute('i-for');
 
   const renderRefs = Traverse.getTraversalTemplate(ref).refs;
@@ -60,11 +62,7 @@ const rendering = function (ref, state) {
 
   const parentRef = ref.parentNode;
 
-  const { watcher } = list.compiler({
-    ref, parentRef,
-    refClone: ref.cloneNode(true),
-    parentRefClone: parentRef.cloneNode(true)
-  }, state);
+  const { watcher } = list.compiler({ ref, parentRef, refClone }, state);
 
   const observer = () => {
     watcher(() => {

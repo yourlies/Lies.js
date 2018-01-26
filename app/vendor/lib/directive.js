@@ -1,8 +1,9 @@
 import Obj from './obj.js';
 import Str from './str.js';
 
-let markCount = 0;
-const commentRefs = [];
+const Tool = {};
+Tool.commentRefs = [];
+Tool.commentsFor = [];
 
 const directives = {};
 directives.focus = function (ref) {
@@ -92,17 +93,15 @@ directives.fade = function (ref, parentRef, attrValue, state) {
   }
 }
 directives.for = function (ref, parentRef, cloneRef, cloneParentRef, state) {
-  const forKey = ref.getAttribute('i-for-key');
-  const forName = ref.getAttribute('i-for-name');
-  const forIndex = ref.getAttribute('i-for-index');
-
-  ref.removeAttribute('i-for-key');
-  ref.removeAttribute('i-for-index');
-  ref.removeAttribute('i-for-name');
+  const forKey = cloneRef.getAttribute('i-for-key');
+  const forName = cloneRef.getAttribute('i-for-name');
+  const forIndex = cloneRef.getAttribute('i-for-index');
 
   const outerHTML = ref.outerHTML;
   let renderHTML = '';
   const forArr = Obj.read(`@${forName}`, state);
+
+  const renderArr = [];
 
   for (let i = 0; i < forArr.length; i++) {
     const pattern = new RegExp(`\\(##${forKey}##\\)`, 'g');
@@ -112,32 +111,42 @@ directives.for = function (ref, parentRef, cloneRef, cloneParentRef, state) {
     const tPattern = new RegExp(`\\(##${forIndex}##\\)`, 'g');
 
     replaceHTML = replaceHTML.replace(tPattern, i);
+
+    const container = document.createElement('div');
+    container.innerHTML = replaceHTML;
+    renderArr.push(container.childNodes[0]);
     renderHTML += replaceHTML;
   }
 
-  const forId = cloneRef.getAttribute('m-for-id');
+  const forId = cloneRef.getAttribute('i-for-id');
   if (forId) {
-    const pattern = new RegExp(`<!--~for-${forId}-->(.|\t|\n)*?<!--~end-for-${forId}-->`, 'i');
-    parentRef.innerHTML = parentRef.innerHTML.replace(pattern, function (match) {
-    return `<!--~for-${forId}-->${renderHTML}<!--~end-for-${forId}-->`;
-    });
+    const removeArr = Tool.commentsFor[forId].renderArr;
+    const removeEnd = Tool.commentsFor[forId].end;
+    for (let i = 0; i < removeArr.length; i++) {
+      removeArr[i].parentNode.removeChild(removeArr[i]);
+    }
+    for (let i = 0; i < renderArr.length; i++) {
+      parentRef.insertBefore(renderArr[i], removeEnd);
+    }
     return false;
   }
 
-  cloneRef.setAttribute('m-for-id', markCount);
-  const startMark = document.createComment(`~for-${markCount}`);
-  const endMark = document.createComment(`~end-for-${markCount}`);
-  parentRef.insertBefore(startMark, ref);
+  const start = document.createComment('for');
+  const end = document.createComment('end-for');
+
+  const id = Tool.commentsFor.push({ start, end, renderArr }) - 1;
+  cloneRef.setAttribute('i-for-id', id);
+
+  parentRef.insertBefore(start, ref);
   if (!ref.nextSibling) {
-    parentRef.appendChild(endMark);
+    parentRef.appendChild(end);
   } else {
-    parentRef.insertBefore(endMark, ref.nextSibling);
+    parentRef.insertBefore(end, ref.nextSibling);
   }
-  const pattern = new RegExp(`<!--~for-${markCount}-->(.|\t|\n)*?<!--~end-for-${markCount}-->`, 'i');
-  parentRef.innerHTML = parentRef.innerHTML.replace(pattern, function (match) {
-    return `<!--~for-${markCount}-->${renderHTML}<!--~end-for-${markCount}-->`;
-  });
-  markCount++;
+  ref.parentNode.removeChild(ref);
+  for (let i = 0; i < renderArr.length; i++) {
+    parentRef.insertBefore(renderArr[i], end);
+  }
 }
 
 module.exports = directives;
