@@ -2,10 +2,13 @@ import Lies from './vendor/vm.js';
 import Refs from './vendor/dom/refs.js';
 import Router from './vendor/plugin/router.js';
 import Transition from './vendor/plugin/transition.js';
+import Processor from './vendor/plugin/processor.js';
 
 self.state = {};
 self.state.$components = {};
 self.state.$els = [];
+
+Processor.install(Lies);
 
 self.Lies = Lies;
 self.Lies.createComponent = function (instance) {

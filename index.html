@@ -7,7 +7,7 @@
   <script src="./build/bundle.js"></script>
   <script>
     var demo = Lies.createComponent({
-      template: '<div><a i-for="a in arr" e-click="demo">{{ a }}</a></div>',
+      template: '<div><a i-for="(a, key) in arr" e-click="demo(key)">{{ a }}</a></div>',
       data: function () {
         return {
           arr: [0, 1],
@@ -17,13 +17,16 @@
       },
       methods: {
         demo (e) {
-          this.arr = [0, 1, 2, 3];
+          console.log(e)
         }
       }
     });
+    demo.$register('fuck').then((state) => {
+      state.arr = ['姜太公', '姜子牙'];
+    });
     setTimeout(() => {
-      demo.test = false;
-    }, 2000)
+      demo.$request('fuck');
+    }, 1000)
   </script>
 </body>
 </html>

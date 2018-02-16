@@ -1,5 +1,6 @@
 const maps = {
   param: new RegExp('([@0-9.a-z]+)|(\'(.*?)\')|("(.*?)")', 'gi'),
+  funcwithparam: new RegExp('[a-z0-9.@]+\\(.*?\\)', 'i'),
 }
 
 const needmarkedparam = function (input) {

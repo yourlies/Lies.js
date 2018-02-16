@@ -1,5 +1,6 @@
 import DirectiveProcessor from '../lib/directive.js';
 import ObjectProcessor from '../lib/obj.js';
+import Pattern from '../lib/pattern.js';
 import Expand from '../expand/index.js';
 
 // compiler element directive attribute
@@ -41,7 +42,7 @@ events.compiler = function ({ ref, name, value, detect, state }) {
   const event = name.substring(2);
   ref.addEventListener(event, (e) => {
     setTimeout(() => {
-      if (value.match(/\([a-z0-9.@]+\)/i)) {
+      if (value.match(Pattern.maps.funcwithparam)) {
         ObjectProcessor.read(value, state);
       } else {
         state.$events = state.$events || {};

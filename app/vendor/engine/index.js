@@ -55,6 +55,7 @@ const rendering = function (ref, state) {
   ref.removeAttribute('i-for');
 
   const renderRefs = Traverse.getTraversalTemplate(ref).refs;
+  renderRefs.unkind.normal.push(ref);
   for (let i = 0; i < renderRefs.unkind.normal.length; i++) {
     const renderRef = renderRefs.unkind.normal[i];
     Expand.list({ ref: renderRef, key, index, state });

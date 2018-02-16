@@ -128,6 +128,7 @@ directives.for = function (ref, parentRef, cloneRef, cloneParentRef, state) {
     for (let i = 0; i < renderArr.length; i++) {
       parentRef.insertBefore(renderArr[i], removeEnd);
     }
+    Tool.commentsFor[forId].renderArr = renderArr;
     return false;
   }
 
