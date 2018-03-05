@@ -13,13 +13,13 @@ directives.if = function ({ ref, parentRef, value, state, cloneRef }) {
   let ifId = cloneRef.getAttribute('if-id');
   let commentRef = '';
   if (ifId) {
-    commentRef = commentRefs[ifId];
+    commentRef = Tool.commentRefs[ifId];
   } else {
     self.state.$els.push(ref);
-    commentRef = document.createComment('<--~if-->');
-    cloneRef.setAttribute('if-id', commentRefs.length);
-    ifId = commentRefs.length;
-    commentRefs.push(commentRef);
+    commentRef = document.createComment('<--if-->');
+    cloneRef.setAttribute('if-id', Tool.commentRefs.length);
+    ifId = Tool.commentRefs.length;
+    Tool.commentRefs.push(commentRef);
   }
   const renderValue = Obj.read(value, state);
   if (!renderValue) {

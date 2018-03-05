@@ -4,29 +4,16 @@
   <title>demo</title>
 </head>
 <body>
+  <div ref="demo">
+    <div i-if="false">123</div>
+  </div>
   <script src="./build/bundle.js"></script>
   <script>
-    var demo = Lies.createComponent({
-      template: '<div><a i-for="(a, key) in arr" e-click="demo(key)">{{ a }}</a></div>',
-      data: function () {
-        return {
-          arr: [0, 1],
-          str: 'Are you ok?',
-          test: true,
-        }
-      },
-      methods: {
-        demo (e) {
-          console.log(e)
-        }
-      }
-    });
-    demo.$register('fuck').then((state) => {
-      state.arr = ['姜太公', '姜子牙'];
-    });
-    setTimeout(() => {
-      demo.$request('fuck');
-    }, 1000)
+    var demo = new Lies({
+    id: 'demo',
+    data () {},
+  })
+  new Refs(demo);
   </script>
 </body>
 </html>
