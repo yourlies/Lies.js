@@ -5,8 +5,9 @@ import Expand from '../expand/index.js';
 
 // compiler element directive attribute
 const directiveHotMap = {
-  'if': true,
-  'focus': true,
+  if: true,
+  show: true,
+  focus: true,
 };
 const directive = {};
 directive.matcher = function (attrKey) {

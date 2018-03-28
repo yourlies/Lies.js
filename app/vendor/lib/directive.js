@@ -9,6 +9,14 @@ const directives = {};
 directives.focus = function (ref) {
   ref.focus();
 }
+directives.show = function ({ ref, parentRef, value, state }) {
+  const renderValue = Obj.read(value, state);
+  if (renderValue) {
+    ref.style.display = '';
+  } else {
+    ref.style.display = 'none';
+  }
+}
 directives.if = function ({ ref, parentRef, value, state, cloneRef }) {
   let ifId = cloneRef.getAttribute('if-id');
   let commentRef = '';
@@ -45,13 +53,6 @@ directives.prevent = function (ref) {
   ref.ontouchmove = function (e) {
     e.preventDefault();
   }
-}
-directives.fadebg = function (ref, parentRef, attrValue, state) {
-  ref.removeAttribute('~fadebg')
-  const value = Obj.read(attrValue, state);
-  setTimeout(() => {
-    ref.style.backgroundImage = `url(${value})`;
-  })
 }
 directives.model = function (ref, parentRef, attrValue, state) {
   const value = ref.getAttribute('~model').substring(1);

@@ -5,15 +5,22 @@
 </head>
 <body>
   <div ref="demo">
-    <div i-if="false">123</div>
+    <div i-show="condition">123</div>
   </div>
   <script src="./build/bundle.js"></script>
   <script>
     var demo = new Lies({
-    id: 'demo',
-    data () {},
-  })
-  new Refs(demo);
+      id: 'demo',
+      data () {
+        return {
+          condition: true,          
+        }
+      },
+    })
+    new Refs(demo);
+    setTimeout(() => {
+      demo.condition = false;
+    }, 1000);
   </script>
 </body>
 </html>
